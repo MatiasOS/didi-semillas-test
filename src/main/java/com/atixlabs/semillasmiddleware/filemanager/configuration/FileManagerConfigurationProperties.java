@@ -11,5 +11,9 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class FileManagerConfigurationProperties {
 
+    public String getWorkPathDirectory() {
+        return workPathDirectory;
+    }
+
     private String workPathDirectory;
 }

@@ -14,7 +14,6 @@ import java.math.BigInteger;
 @NoArgsConstructor
 @Table(name = "users", schema="security")
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -39,5 +38,23 @@ public class User {
     private Role role;
 
     private boolean active;
+
+    /*Getters & Setters*/
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public Role getRole() {
+        return role;
+    }
 
 }

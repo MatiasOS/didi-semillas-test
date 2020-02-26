@@ -23,4 +23,9 @@ public class Role {
 
     private String description;
 
+    public String getCode() {
+        return code;
+    }
+
+
 }
