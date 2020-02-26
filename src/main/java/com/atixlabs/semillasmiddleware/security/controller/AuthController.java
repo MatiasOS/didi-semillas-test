@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "*", methods= {RequestMethod.GET,RequestMethod.POST})
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -41,6 +42,7 @@ public class AuthController {
 
        // final UserDetails userDetails = userDetailsService
         //        .loadUserByUsername(authenticationRequest.getUsername());
+
         final String token = jwtTokenProvider.generateToken(customUser);
         return ResponseEntity.ok(new JwtResponse(token));
     }
