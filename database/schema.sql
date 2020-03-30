@@ -47,3 +47,19 @@ TABLESPACE pg_default;
 
 ALTER TABLE security.users
     OWNER to semillas;
+
+--TABLAS DE CREDENCIALES
+CREATE TABLE security.credentials_data
+(
+    id SERIAL PRIMARY KEY,
+    credential_name character varying(255) COLLATE pg_catalog."default",
+    category_name character varying(255) COLLATE pg_catalog."default",
+    question_name character varying(255) COLLATE pg_catalog."default" NOT NULL--,
+
+    --CONSTRAINT fk_security_user_role FOREIGN KEY (id_role)
+    --    REFERENCES security.role (id) MATCH SIMPLE
+    --    ON UPDATE NO ACTION
+    --    ON DELETE NO ACTION
+)
+WITH ( OIDS = FALSE) TABLESPACE pg_default;
+ALTER TABLE security.users OWNER to semillas;
