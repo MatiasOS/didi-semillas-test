@@ -1,0 +1,19 @@
+=== Get AuthController
+Login
+
+==== Sample Request
+include::{snippets}/auth-controller-test/login/http-request.adoc[]
+
+==== Sample Response
+include::{snippets}/auth-controller-test/login/http-response.adoc[]
+include::{snippets}/auth-controller-test/login/response-body.adoc[]
+
+==== CURL sample
+include::{snippets}/auth-controller-test/login/curl-request.adoc[]
+
+==== Path Parameters
+include::{snippets}/auth-controller-test/login/path-parameters.adoc[]
+
+
+==== Response Fields
+include::{snippets}/auth-controller-test/login/response-fields.adoc[]

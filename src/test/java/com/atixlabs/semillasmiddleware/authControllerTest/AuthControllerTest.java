@@ -32,6 +32,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static io.restassured.RestAssured.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 
 
 @ExtendWith({RestDocumentationExtension.class, SpringExtension.class})
@@ -42,12 +43,10 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 public class AuthControllerTest {
 
     @Rule
-    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("target/generated-docs");
+    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("target/generated-snippets");
 
     private MockMvc mockMvc;
 
-    @InjectMocks
-    private AuthController usersController;
 
     @Autowired
     private WebApplicationContext context;
@@ -81,9 +80,11 @@ public class AuthControllerTest {
 
         mockMvc.perform(
                 MockMvcRequestBuilders.post("/auth/login").accept(MediaType.APPLICATION_JSON).content(adminLogin().toString()))
-                .andDo(document("{class-name}/{method-name}"));
+                .andDo(document("{class-name}/{method-name}",
+                        requestFields(fieldWithPath("id").description("The id of the input"),)));
 
-
+//To use spring rest docs, we need to execute a call to the endpoint with mockMvc, this will generate the information of the request and response. Then in asciidoc/index.adoc is specified
+        // the files you want to show. To add more information to requests or reponses you need to add different method on the test above.
 
     }
 }

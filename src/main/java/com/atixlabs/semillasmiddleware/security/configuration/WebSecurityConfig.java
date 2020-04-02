@@ -77,6 +77,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .authorizeRequests()
                     .antMatchers(AUTH_WHITELIST).permitAll().
                     antMatchers("/auth/login").permitAll()
+                    .antMatchers("/docs/*").permitAll()
                     .antMatchers("/api/file/upload").permitAll()
                     .anyRequest().authenticated().and().
                         exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
