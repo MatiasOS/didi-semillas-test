@@ -4,6 +4,7 @@ import com.atixlabs.semillasmiddleware.app.model.beneficiary.Person;
 import com.atixlabs.semillasmiddleware.security.model.AuditableEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -33,7 +34,7 @@ public abstract class Credential extends AuditableEntity {
 
     private LocalDateTime dateOfExpiry;
 
-    private Long idRelatedCredential;
+    private Long idRelatedCredential; //TODO: como maneja la relacion de credenciales relacionadas con la principal (benef. ppal -> flia
 
     @ManyToOne
     private Person beneficiary;
@@ -42,6 +43,24 @@ public abstract class Credential extends AuditableEntity {
 
     private String credentialType;
 
+
+      public Credential(Credential credential) {
+        this.id = credential.getId();
+        this.idDidiIssueer = credential.getIdDidiIssueer();
+        this.idDidiReceptor = credential.getIdDidiReceptor();
+        this.idDidiCredential = credential.getIdDidiCredential();
+        this.idHistorical = credential.getIdHistorical();
+        this.dateOfIssue = credential.getDateOfIssue();
+        this.dateOfExpiry = credential.getDateOfExpiry();
+        this.idRelatedCredential = credential.getIdRelatedCredential();
+        this.beneficiary = credential.getBeneficiary();
+        this.credentialState = credential.getCredentialState();
+        this.credentialType = credential.getCredentialType();
+    }
+
+    public Credential() {
+
+    }
 
     @Override
     public String toString() {

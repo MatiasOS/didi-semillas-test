@@ -7,23 +7,27 @@ import com.atixlabs.semillasmiddleware.app.model.credential.CredentialCredit;
 import com.atixlabs.semillasmiddleware.app.model.credential.CredentialIdentity;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialStatesCodes;
 import com.atixlabs.semillasmiddleware.app.repository.CredentialRepository;
+import com.atixlabs.semillasmiddleware.app.service.CredentialService;
 import com.atixlabs.semillasmiddleware.util.DateUtil;
 
-import io.restassured.internal.assertion.Assertion;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import com.atixlabs.semillasmiddleware.app.model.beneficiary.Person;
+
+import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +40,9 @@ public class CredentialServiceTest {
     @Mock
     CredentialRepository credentialRepository;
 
+    @InjectMocks
+    CredentialService credentialService;
+
     @Autowired
     DateUtil util;
 
@@ -46,20 +53,26 @@ public class CredentialServiceTest {
         person.setName("Pepito");
         return person;
     }
-    private List<Credential> credentialsMock(){
-        List<Credential> credentials = new ArrayList<>();
 
-        Person beneficiary = getBeneficiaryMock();
-
-        CredentialCredit credential1 = new CredentialCredit();
+    private Optional<Credential> getACredentialMock(){
+        Credential credential1 = new CredentialCredit();
         credential1.setId(1L);
         credential1.setIdDidiCredential(2L);
         credential1.setDateOfIssue(LocalDateTime.now());
         credential1.setDateOfExpiry(LocalDateTime.now().plusDays(1));
+        credential1.setBeneficiary(getBeneficiaryMock());
+        credential1.setCredentialState(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode());
+
+        return Optional.of(credential1);
+    }
+    private List<Credential> credentialsMock(){
+        List<Credential> credentials = new ArrayList<>();
+
+        Person beneficiary = getBeneficiaryMock();
+        Optional<Credential> c = getACredentialMock();
+        CredentialCredit credential1 = new CredentialCredit(c.get());
         credential1.setDniBeneficiary(29302594L);
         credential1.setCreditState("Estado");
-        credential1.setBeneficiary(beneficiary);
-        credential1.setCredentialState(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode());
         credentials.add(credential1);
 
         CredentialIdentity credentialIdentity = new CredentialIdentity();
@@ -79,7 +92,7 @@ public class CredentialServiceTest {
 
     @Test
     public void getActiveCredentials() {
-        when(credentialRepository.findAllByCredentialState("Vigente")).thenReturn((List<Credential>) credentialsMock());
+        when(credentialRepository.findAllByCredentialState("Vigente")).thenReturn(credentialsMock());
 
         List<Credential> credentials = credentialRepository.findAllByCredentialState("Vigente");
 
@@ -97,6 +110,17 @@ public class CredentialServiceTest {
         Assertions.assertTrue(credentialsDto.get(0).getDateOfExpiry() != null);
         Assertions.assertTrue(credentialsDto.get(0).getDateOfIssue() != null);
         Assertions.assertEquals(credentialsMock().get(0).getBeneficiary().getName() ,credentialsDto.get(0).getName());
+    }
+
+    @Test
+    public void revokeCredential(){
+        when(credentialRepository.findById(anyLong())).thenReturn(getACredentialMock());
+
+        Optional<Credential> opCredential = credentialRepository.findById(1L);
+        Credential cred = credentialService.revokeCredential(opCredential.get());
+        log.info("Credential obtained " + cred.toString());
+
+        Assertions.assertEquals(CredentialStatesCodes.CREDENTIAL_REVOKE.getCode(), cred.getCredentialState());
     }
 
 }

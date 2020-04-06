@@ -2,6 +2,7 @@ package com.atixlabs.semillasmiddleware.app.model.credential;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Entity;
@@ -11,7 +12,6 @@ import javax.persistence.Transient;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @Entity
 @PrimaryKeyJoinColumn(referencedColumnName="id")
 public class CredentialCredit extends Credential {
@@ -36,6 +36,14 @@ public class CredentialCredit extends Credential {
 
     @Transient
     private String credentialType = "CredentialCredit";
+
+    public CredentialCredit (Credential credential){
+        super(credential);
+    }
+
+    public CredentialCredit() {
+        super();
+    }
 
 
     @Override

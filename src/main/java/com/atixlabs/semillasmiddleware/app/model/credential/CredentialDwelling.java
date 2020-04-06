@@ -10,7 +10,6 @@ import javax.persistence.Transient;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @Entity
 @PrimaryKeyJoinColumn(referencedColumnName="id")
 public class CredentialDwelling extends Credential {
@@ -23,4 +22,7 @@ public class CredentialDwelling extends Credential {
     private String credentialType = "CredentialDwelling";
 
 
+    public CredentialDwelling(Credential credential) {
+        super(credential);
+    }
 }

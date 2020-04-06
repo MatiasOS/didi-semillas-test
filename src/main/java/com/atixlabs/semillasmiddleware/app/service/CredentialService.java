@@ -1,8 +1,12 @@
 package com.atixlabs.semillasmiddleware.app.service;
 
 import com.atixlabs.semillasmiddleware.app.dto.CredentialDto;
+import com.atixlabs.semillasmiddleware.app.model.credential.Credential;
 import com.atixlabs.semillasmiddleware.app.model.credential.CredentialCredit;
+import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialStatesCodes;
 import com.atixlabs.semillasmiddleware.app.repository.CredentialCreditRepository;
+import com.atixlabs.semillasmiddleware.app.repository.CredentialRepository;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +19,19 @@ public class CredentialService {
 
     @Autowired
     private CredentialCreditRepository credentialCreditRepository;
+
+    @Autowired
+    CredentialRepository credentialRepository;
+
+
+    public Credential revokeCredential(Credential credentialToRevoke){
+        credentialToRevoke.setCredentialState(CredentialStatesCodes.CREDENTIAL_REVOKE.getCode());
+        credentialRepository.save(credentialToRevoke);
+
+        //TODO: Segun como se estructure la relacion de beneficiario principal con la familia debe revocarse todos los relacionados
+        return credentialToRevoke;
+    }
+
 
     public void addCredentialCredit(){
         CredentialCredit credentialCredit = new CredentialCredit();

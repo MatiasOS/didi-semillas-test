@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @Entity
 @PrimaryKeyJoinColumn(referencedColumnName="id")
 public class CredentialEntrepreneurship extends Credential {
@@ -32,4 +31,8 @@ public class CredentialEntrepreneurship extends Credential {
 
     @Transient
     private String credentialType = "CredentialEntrepreneurship";
+
+    public CredentialEntrepreneurship(Credential credential) {
+        super(credential);
+    }
 }
