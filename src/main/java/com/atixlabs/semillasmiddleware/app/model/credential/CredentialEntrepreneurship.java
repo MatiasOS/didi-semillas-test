@@ -35,4 +35,6 @@ public class CredentialEntrepreneurship extends Credential {
     public CredentialEntrepreneurship(Credential credential) {
         super(credential);
     }
+
+    public CredentialEntrepreneurship(){}
 }
