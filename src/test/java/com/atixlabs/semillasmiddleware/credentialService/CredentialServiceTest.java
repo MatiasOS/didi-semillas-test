@@ -1,12 +1,12 @@
 package com.atixlabs.semillasmiddleware.credentialService;
 
-import com.atixlabs.semillasmiddleware.app.dto.CredentialDto;
 import com.atixlabs.semillasmiddleware.app.model.beneficiary.Person;
 import com.atixlabs.semillasmiddleware.app.model.credential.Credential;
 import com.atixlabs.semillasmiddleware.app.model.credential.CredentialCredit;
 import com.atixlabs.semillasmiddleware.app.model.credential.CredentialIdentity;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialStatesCodes;
 import com.atixlabs.semillasmiddleware.app.repository.CredentialRepository;
+import com.atixlabs.semillasmiddleware.app.repository.CredentialServiceCustom;
 import com.atixlabs.semillasmiddleware.app.service.CredentialService;
 import com.atixlabs.semillasmiddleware.util.DateUtil;
 
@@ -20,12 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
@@ -36,6 +34,9 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @Slf4j
 public class CredentialServiceTest {
+
+    @Mock
+    CredentialServiceCustom credentialServiceCustom;
 
     @Mock
     CredentialRepository credentialRepository;
@@ -92,24 +93,24 @@ public class CredentialServiceTest {
 
     @Test
     public void getActiveCredentials() {
-        when(credentialRepository.findAllByCredentialState("Vigente")).thenReturn(credentialsMock());
+        when(credentialServiceCustom.findCredentialsWithFilter(null,null,null, null, null, null,"Vigente")).thenReturn((List<Credential>) credentialsMock());
 
-        List<Credential> credentials = credentialRepository.findAllByCredentialState("Vigente");
+        List<Credential> credentials = credentialServiceCustom.findCredentialsWithFilter(null,null,null, null, null, null,"Vigente");
 
-        verify(credentialRepository).findAllByCredentialState("Vigente");
+        verify(credentialServiceCustom).findCredentialsWithFilter(null,null,null, null, null, null,"Vigente");
 
-        List<CredentialDto> credentialsDto = credentials.stream().map(aCredential -> new CredentialDto(aCredential)).collect(Collectors.toList());
-        log.info("credenciales " +credentialsDto.toString());
+        //List<CredentialDto> credentialsDto = credentials.stream().map(aCredential -> new CredentialDto(aCredential)).collect(Collectors.toList());
+        log.info("credenciales " +credentials.toString());
 
 
-        Assertions.assertTrue(credentialsDto.size() > 0);
-        Assertions.assertEquals(credentialsMock().get(0).getId() ,credentialsDto.get(0).getId());
-        Assertions.assertEquals(credentialsMock().get(0).getCredentialState(), credentialsDto.get(0).getCredentialState());
-        //Assertions.assertEquals(credentialsMock().get(0).getDniBeneficiary() ,credentialsDto.get(0).getDniBeneficiary());
-        Assertions.assertEquals(credentialsMock().get(0).getIdDidiCredential() ,credentialsDto.get(0).getIdDidiCredential());
-        Assertions.assertTrue(credentialsDto.get(0).getDateOfExpiry() != null);
-        Assertions.assertTrue(credentialsDto.get(0).getDateOfIssue() != null);
-        Assertions.assertEquals(credentialsMock().get(0).getBeneficiary().getName() ,credentialsDto.get(0).getName());
+        Assertions.assertTrue(credentials.size() > 0);
+        Assertions.assertEquals(credentialsMock().get(0).getId() ,credentials.get(0).getId());
+        Assertions.assertEquals(credentialsMock().get(0).getCredentialState(), credentials.get(0).getCredentialState());
+        Assertions.assertEquals(credentialsMock().get(0).getBeneficiary().getDocumentNumber() ,credentials.get(0).getBeneficiary().getDocumentNumber());
+        Assertions.assertEquals(credentialsMock().get(0).getIdDidiCredential() ,credentials.get(0).getIdDidiCredential());
+        Assertions.assertTrue(credentials.get(0).getDateOfExpiry() != null);
+        Assertions.assertTrue(credentials.get(0).getDateOfIssue() != null);
+        Assertions.assertEquals(credentialsMock().get(0).getBeneficiary().getName() ,credentials.get(0).getBeneficiary().getName());
     }
 
     @Test

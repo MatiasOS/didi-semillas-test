@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface CredentialRepository extends JpaRepository<Credential, Long> {
 
-    List<Credential> findAllByCredentialState(String credentialState);
+
+
 }
