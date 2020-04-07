@@ -3,6 +3,7 @@ package com.atixlabs.semillasmiddleware.app.controller;
 import com.atixlabs.semillasmiddleware.app.dto.CredentialDto;
 import com.atixlabs.semillasmiddleware.app.model.credential.Credential;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialStatesCodes;
+import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialTypesCodes;
 import com.atixlabs.semillasmiddleware.app.repository.CredentialCreditRepository;
 import com.atixlabs.semillasmiddleware.app.repository.CredentialRepository;
 import com.atixlabs.semillasmiddleware.app.repository.CredentialServiceCustom;
@@ -88,23 +89,19 @@ public class CredentialController {
     @GetMapping("/credentialStates")
     @ResponseStatus(HttpStatus.OK)
     public List<String> findCredentialStates() {
-        log.info("find credential states ----> " + Arrays.stream(CredentialStatesCodes.values()).map(state -> state.getCode()).collect(Collectors.toList()));
-        return Arrays.stream(CredentialStatesCodes.values()).map(state -> state.getCode()).collect(Collectors.toList());
+        List<String> credentialStates =  Arrays.stream(CredentialStatesCodes.values()).map(state -> state.getCode()).collect(Collectors.toList());
+        log.info("find credential states ----> " + credentialStates);
+        return credentialStates;
     }
 
 
     @GetMapping("/credentialTypes")
     @ResponseStatus(HttpStatus.OK)
     public List<String> findCredentialTypes() {
-       // log.info("find credential types ----> " + Arrays.stream(CredentialStatesCodes.values()).map(state -> state.getCode()).collect(Collectors.toList()));
-        //return Arrays.stream(CredentialStatesCodes.values()).map(state -> state.getCode()).collect(Collectors.toList());
         //TODO: desmockear creando un enum con los tipos de credenciales como lso estados para utilizar en el searchbox
-        List<String> crdentialTypes= new ArrayList<>();
-        crdentialTypes.add("CredentialCredit");
-        crdentialTypes.add("CredentialDwelling");
-        crdentialTypes.add("CredentialIdentity");
-        crdentialTypes.add("CredentialEntrepreneurship");
-        return crdentialTypes;
+        List<String> credentialTypes =  Arrays.stream(CredentialTypesCodes.values()).map(state -> state.getCode()).collect(Collectors.toList());
+        log.info("find credential types ----> " + credentialTypes);
+        return credentialTypes;
     }
 
 
