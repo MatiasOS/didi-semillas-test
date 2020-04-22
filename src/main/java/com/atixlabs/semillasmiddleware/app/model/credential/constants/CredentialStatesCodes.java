@@ -2,12 +2,11 @@ package com.atixlabs.semillasmiddleware.app.model.credential.constants;
 
 public enum CredentialStatesCodes {
 
-    //CREDENTIAL_PENDING_BONDAREA("Pendiente-bondarea"),
-    //CREDENTIAL_PENDING_DIDI("Pendiente-didi"),
     CREDENTIAL_ACTIVE("Vigente"),
-    CREDENTIAL_EXPIRED("Vencida"),
-    CREDENTIAL_OUT_OF_DATE("Caducada"),
+    //REDENTIAL_OUT_OF_DATE("Caducada"), -> va a ser una razon de revocacion
     CREDENTIAL_REVOKE("Revocada");
+
+    // Todo: Solicitud revocada cuando es pendiente bondarea -> que pasa en este estado ? dodne va ?
 
     private String code;
 

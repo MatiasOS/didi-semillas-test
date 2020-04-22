@@ -1,5 +1,6 @@
 package com.atixlabs.semillasmiddleware.app.model.credential;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,20 +17,22 @@ import java.time.LocalDateTime;
 @PrimaryKeyJoinColumn(referencedColumnName="id")
 public class CredentialEntrepreneurship extends Credential {
 
+    // Comercio, Producción,Servicio
     private String entrepreneurshipType; //TODO enum or new class?
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDateTime startActivity;
 
     private String mainActivity;
 
-    private String nameEntrepreneurship;
+    private String entrepreneurshipName;
 
-    private String addressEntrepreneurship;
+    private String entrepreneurshipAddress;
 
-    private String creditState; //TODO is into super class??
+    //TODO
+    // private String creditState; //TODO is into super class?? Este campo estaria en creditState, asociada el beneficiary
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDateTime endActivity;
 
-    @Transient
-    private String credentialType = "CredentialEntrepreneurship";
 }

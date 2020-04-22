@@ -25,7 +25,7 @@ import static io.restassured.RestAssured.given;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+@SpringBootTest
 @Slf4j
 public class AuthControllerIntegrationTest extends BasicAuthIntegrationTest{
 

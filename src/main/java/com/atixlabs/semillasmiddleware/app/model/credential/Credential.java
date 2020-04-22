@@ -1,6 +1,7 @@
 package com.atixlabs.semillasmiddleware.app.model.credential;
 
 import com.atixlabs.semillasmiddleware.app.model.beneficiary.Person;
+import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
 import com.atixlabs.semillasmiddleware.security.model.AuditableEntity;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,14 +34,23 @@ public abstract class Credential extends AuditableEntity {
 
     private LocalDateTime dateOfExpiry;
 
-    private Long idRelatedCredential;
+    //private Long idRelatedCredential; //TODO: Cual es la finalidad ? Si se asocia las credenciales del titular deberia estar en credentialCredit ya
+                                      // ya que es la credencial principal. Las credcenciales familiares se pueden encontrar filtrando a las personas que
+                                      // asociado el dni del titular
 
     @ManyToOne
     private Person beneficiary;
 
-    private String credentialState;
+    @ManyToOne
+    private CredentialState credentialState;
+
+    private String credentialStatus; //pending -> bondarea/didi || Active -> null
 
     private String credentialDescription;
+
+    private String credentialCategory;
+
+
 
 
     @Override
@@ -54,7 +64,7 @@ public abstract class Credential extends AuditableEntity {
                 ", idHistorical=" + idHistorical +
                 ", dateOfIssue=" + dateOfIssue +
                 ", dateOfExpiry=" + dateOfExpiry +
-                ", idRelatedCredential=" + idRelatedCredential +
+               // ", idRelatedCredential=" + idRelatedCredential +
                 ", beneficiary=" + beneficiary +
                 ", credentialState='" + credentialState + '\'' +
                 ", credentialType='" + credentialDescription + '\'' +
