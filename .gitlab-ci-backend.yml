@@ -1,0 +1,58 @@
+variables:
+  # Common variables to be able to build and push docker images
+  # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-disabled
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  # Backend Props
+  # =============
+  MAVEN_CLI_OPTS: ""
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  # https://hub.docker.com/_/postgres
+  POSTGRES_PASSWORD: "semillas_ci"
+  POSTGRES_USER: "semillas_ci"
+  POSTGRES_DB: "semillas_db_ci"
+  spring_profiles_active: "ci"
+
+cache:
+  paths:
+    - .m2/repository/
+    - target/
+
+stages:
+  - test
+  - package
+
+backend:
+  image: openjdk:11-jdk-slim
+  services:
+    - name: postgres:11.1
+      alias: db
+  stage: test
+  script:
+    - ./mvnw $MAVEN_CLI_OPTS test
+  only:
+    changes:
+      - "**/*"
+
+package-backend:
+  image: openjdk:11-jdk-slim
+  services:
+    - docker:19.03.1-dind
+  stage: package
+  script:
+    - apt-get update; apt-get install curl -y
+    - curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
+    - docker login -u gitlabci -p $CI_JOB_TOKEN $CI_REGISTRY
+    # Tests are skipped as we just executed them in `backend` job
+    - ./mvnw clean -Dmaven.test.skip=true $MAVEN_CLI_OPTS package dockerfile:build dockerfile:push
+
+  only:
+    refs:
+      - semillas-template-from-abi
+      # Only run on develop, release/x.y.x and hotfix/xxxx
+      - develop
+      - /^release.*$/
+      - /^hotfix.*$/
+    changes:
+      - "**/*"
+

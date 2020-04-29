@@ -1,0 +1,51 @@
+variables:
+  # Common variables to be able to build and push docker images
+  # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-disabled
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  # Backend Props
+  # =============
+  MAVEN_CLI_OPTS: ""
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  # https://hub.docker.com/_/postgres
+  POSTGRES_PASSWORD: "radb_ci" # TODO Change pass
+  POSTGRES_USER: "radb_ci" # TODO Change user
+  POSTGRES_DB: "risk_assessment_db_ci" # TODO Change db name
+  spring_profiles_active: "ci"
+
+cache:
+  paths:
+    - ./.m2/repository/ # TODO Change directory
+    - ./target/ # TODO Change directory
+
+stages:
+  - test
+  - linter
+  - validate-format
+
+test-backend:
+  image: openjdk:11-jdk-slim
+  services:
+    - name: postgres:11.1
+      alias: db
+  stage: test
+  script:
+    - ./mvnw $MAVEN_CLI_OPTS test
+  except:
+    - schedules
+
+linter-backend:
+  image: openjdk:11-jdk-slim
+  stage: linter
+  script:
+    - ./mvnw $MAVEN_CLI_OPTS checkstyle:check
+  except:
+    - schedules
+
+code-style-backend:
+  image: openjdk:11-jdk-slim
+  stage: validate-format
+  script:
+    - ./mvnw $MAVEN_CLI_OPTS fmt:check
+  except:
+    - schedules
