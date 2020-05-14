@@ -15,18 +15,18 @@ services:
       - "traefik.http.routers.backend.entrypoints=web-secure"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=le"
-    frontend:
-      image: docker.atixlabs.com/semillas/semillas-middleware-frontend:0.1.0-f5408ab5
-      environment:
-        - ENVIRONMENT=${ENVIRONMENT}
-      depends_on:
-        - backend
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.frontend.rule=Host(`${FRONTEND_URL}`)"
-        - "traefik.http.routers.frontend.entrypoints=web-secure"
-        - "traefik.http.routers.frontend.tls=true"
-        - "traefik.http.routers.frontend.tls.certresolver=le"
+    #frontend:
+    #  image: docker.atixlabs.com/semillas/semillas-middleware:0.0.1-SNAPSHOT-f5408ab5
+    #  environment:
+    #    - ENVIRONMENT=${ENVIRONMENT}
+    #  depends_on:
+    #    - backend
+    #  labels:
+    #    - "traefik.enable=true"
+    #    - "traefik.http.routers.frontend.rule=Host(`${FRONTEND_URL}`)"
+    #    - "traefik.http.routers.frontend.entrypoints=web-secure"
+    #    - "traefik.http.routers.frontend.tls=true"
+    #    - "traefik.http.routers.frontend.tls.certresolver=le"
   proxy:
     image: traefik:v2.2.0
     command:
@@ -48,7 +48,7 @@ services:
       - "/home/app/certs/:/certs"
     depends_on:
       - backend
-      - frontend
+      #- frontend
   db:
     image: postgres:11.7
     environment:
