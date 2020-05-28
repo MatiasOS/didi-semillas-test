@@ -257,13 +257,13 @@ public class CredentialService {
         switch (beneficiaryPersonCategory.getPersonType()) {
             case BENEFICIARY:
                 credentialIdentity.setCredentialDescription(CredentialTypesCodes.CREDENTIAL_IDENTITY.getCode());
-                credentialIdentity.setRelationWithCreditHolder("titular");//todo parar a enum
+                credentialIdentity.setRelationWithCreditHolder(PersonTypesCodes.HOLDER.getCode());
                 break;
             case SPOUSE:
             case CHILD:
             case OTHER_KINSMAN:
                 credentialIdentity.setCredentialDescription(CredentialTypesCodes.CREDENTIAL_IDENTITY_FAMILY.getCode());
-                credentialIdentity.setRelationWithCreditHolder("familiar");//todo pasar a enum
+                credentialIdentity.setRelationWithCreditHolder(PersonTypesCodes.FAMILY.getCode());
                 break;
         }
 

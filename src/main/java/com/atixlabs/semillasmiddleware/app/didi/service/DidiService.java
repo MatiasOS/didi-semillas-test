@@ -7,6 +7,7 @@ import com.atixlabs.semillasmiddleware.app.didi.repository.DidiAppUserRepository
 import com.atixlabs.semillasmiddleware.app.model.credential.*;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialCategoriesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialStatesCodes;
+import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialTypesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
 import com.atixlabs.semillasmiddleware.app.repository.*;
 import com.atixlabs.semillasmiddleware.app.service.CredentialService;
@@ -181,7 +182,7 @@ public class DidiService {
         didiSyncStatus.add(DidiSyncStatus.SYNC_ERROR.getCode());
         ArrayList<DidiAppUser> didiAppUsers = didiAppUserRepository.findBySyncStatusIn(didiSyncStatus);
 */
-        //find all did dni
+        //find all did-dni
         List<DidiAppUser> didiAppUsers = didiAppUserRepository.findAll();
 
         if (didiAppUsers.size() <= 0)
@@ -208,19 +209,28 @@ public class DidiService {
                 //  Si getCreditHolderDni() != credential.getBeneficiaryDni() es beneficiario
                 //  IMPORTANT: cuando creditHolder = beneficiary ya se cubrirá en siguiente for
                 for (Credential credential : beneficiaries) {
-                    log.info("BENEFICIARIES");
-                    log.info(credential.toString());
-                    if (!credential.getCreditHolderDni().equals(credential.getBeneficiaryDni())) {
-                        String receivedDid = didiAppUserRepository.findByDni(credential.getBeneficiaryDni()).getDid();
+                    if (!credential.getCreditHolderDni().equals(credential.getBeneficiaryDni())) { // is familiar
+                        log.info("SYNC BENEFICIARY "+ credential.getId());
+
+                        if(credential.getCredentialDescription().equals(CredentialTypesCodes.CREDENTIAL_IDENTITY_FAMILY.getCode())) {
+                            //if it is, check if the beneficiary does not have an identity familiar with his did (with the holder dni)
+                            Optional<Credential> opNewIdentity = this.checkToCreateNewIdentityFamiliar(credential);
+                            if (opNewIdentity.isPresent()) {
+                                //get beneficiary did
+                                String receivedDid = didiAppUserRepository.findByDni(credential.getBeneficiaryDni()).getDid();
+                                updateCredentialDidAndDidiSync(opNewIdentity.get(), receivedDid);
+                            }
+                        }
+                        //update the credential
+                        //get the actual did
+                        String receivedDid = didUser.getDid();
                         updateCredentialDidAndDidiSync(credential, receivedDid);
+                        }
                     }
-                } por cada titular de identidad -> debe haber una de identidad con disitnto did -> si no crear identidad con did familiar registrada al titular.
-                    si ya hay,hay que ver como filtrarla para que el titular no la agarre.... (cuando se agarra por did y dni)
 
                 //4-Creo y emito credenciales de titulares
                 for (Credential credential : creditHolders) {
-                    log.info("CREDIT HOLDERS");
-                    log.info(credential.toString());
+                    log.info("SYNC CREDIT HOLDERS " + credential.getId());
                     String receivedDid = didiAppUserRepository.findByDni(credential.getCreditHolderDni()).getDid();
                     this.updateCredentialDidAndDidiSync(credential, receivedDid);
                 }
@@ -233,6 +243,20 @@ public class DidiService {
         return "didiSync: ended";
     }
 
+    private Optional<Credential> checkToCreateNewIdentityFamiliar(Credential credential) {
+        List<CredentialState> pendingActiveState = credentialStateRepository.findByStateNameIn(List.of(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode(), CredentialStatesCodes.PENDING_DIDI.getCode()));
+        List<CredentialIdentity> credentialsIdentities = credentialIdentityRepository.findByCreditHolderDniAndBeneficiaryDniAndCredentialStateIn(credential.getCreditHolderDni(), credential.getBeneficiaryDni(), pendingActiveState);
+        if (credentialsIdentities.size() == 1) {
+            //here create the identity familiar with did of the beneficiary
+            //use as a base credential, the same identity familiar. The difference will be what did contain.
+            CredentialIdentity newFamiliarIdentity = new CredentialIdentity((CredentialIdentity) credential);
+            setCredentialState(CredentialStatesCodes.PENDING_DIDI.getCode(), newFamiliarIdentity);
+            credentialIdentityRepository.save(newFamiliarIdentity);
+
+            return Optional.of(newFamiliarIdentity);
+        }
+        return Optional.empty();
+    }
     private void updateCredentialDidAndDidiSync(Credential credential, String receivedDid){
         log.info("didiSync: credencial para evaluar: " +  credential.getId());
 
