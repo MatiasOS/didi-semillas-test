@@ -12,13 +12,17 @@ import java.util.Optional;
 @Repository
 public interface CredentialRepository extends JpaRepository<Credential, Long> , CredentialRepositoryCustom{
 
-    ArrayList<Credential> findByCredentialStateAndBeneficiaryDniIn(CredentialState credentialState, ArrayList<Long> dniList);
+    //ArrayList<Credential> findByCredentialStateAndBeneficiaryDniIn(CredentialState credentialState, ArrayList<Long> dniList);
 
     ArrayList<Credential> findByCredentialCategoryAndCredentialState(String code, CredentialState credentialStatePending);
 
     Optional<Credential> findByBeneficiaryDniAndCredentialCategoryAndCredentialStateIn(Long beneficiaryDni, String credentialCategoryCode, List<CredentialState> credentialStateActivePending);
 
-    ArrayList<Credential> findByCreditHolderDniIn(ArrayList<Long> dniList);
+    List<Credential> findByCreditHolderDni(Long dni);
 
-    ArrayList<Credential> findByBeneficiaryDniIn(ArrayList<Long> dniList);
+    List<Credential> findByBeneficiaryDni(Long dni);
+
+    List<Credential> findByCreditHolderDniAndCredentialState(Long dni, CredentialState state);
+
+    List<Credential> findByBeneficiaryDniAndCredentialState(Long dni, CredentialState state);
 }

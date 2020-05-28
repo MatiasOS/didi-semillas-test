@@ -135,10 +135,10 @@ public class DidiServiceTest {
         when(didiAppUserRepository.findBySyncStatusIn(any(ArrayList.class))).thenReturn(getAppUserMockOneMissing());
 
         //ArrayList<Credential> creditHolders = credentialRepository.findByCreditHolderDniIn(dniList);
-        when(credentialRepository.findByCreditHolderDniIn(any(ArrayList.class))).thenReturn(getCredentialsCreditHolder());
+        when(credentialRepository.findByCreditHolderDni(anyLong())).thenReturn(getCredentialsCreditHolder());
 
         ArrayList<Credential> beneficiaries = new ArrayList<>();
-        when(credentialRepository.findByBeneficiaryDniIn(any(ArrayList.class))).thenReturn(beneficiaries);
+        when(credentialRepository.findByBeneficiaryDni(anyLong())).thenReturn(beneficiaries);
 
         //tuve que hacer createCertificatyDidi public para poder mockear. (luego usaré spy)
         when(didiService.createCertificateDidiCall(anyString(), any(DidiCredentialData.class))).thenReturn(createDidiCredentialResponseOkMock());
