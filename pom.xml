@@ -117,6 +117,13 @@
 			<scope>provided</scope>
 		</dependency>
 
+	<!-- used for annotations on endpoints such as @min(), @notNull, etc -->
+	<dependency>
+		<groupId>org.hibernate.validator</groupId>
+		<artifactId>hibernate-validator</artifactId>
+		<version>6.0.10.Final</version>
+	</dependency>
+
 		<dependency><!--xls-->
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>

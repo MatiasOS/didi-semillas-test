@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public enum EntrepreneurshipQuestion implements CategoryQuestion {
     TYPE("TIPO DE EMPRENDIMIENTO"),
-    ACTIVITY_START_DATE("FECHA DE INICIO / REINICIO"){
+    ACTIVITY_START_DATE("FECHA DE INICIO"){
         @Override
         public Class<?> getDataType() {
             return LocalDate.class;

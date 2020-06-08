@@ -2,6 +2,7 @@ package com.atixlabs.semillasmiddleware.app.model.credential;
 
 import com.atixlabs.semillasmiddleware.app.model.beneficiary.Person;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
+import com.atixlabs.semillasmiddleware.app.model.credentialState.RevocationReason;
 import com.atixlabs.semillasmiddleware.security.model.AuditableEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,6 +39,9 @@ public abstract class Credential extends AuditableEntity {
 
     protected LocalDateTime dateOfRevocation;
 
+    @ManyToOne
+    protected RevocationReason revocationReason;
+
 
     @ManyToOne
     protected Person creditHolder;
@@ -57,6 +61,10 @@ public abstract class Credential extends AuditableEntity {
     protected String credentialDescription;
 
     protected String credentialCategory;
+
+    public boolean isManuallyRevocable(){return true;}
+
+    public Boolean isEmitted(){ return idDidiCredential != null;}
 
     public Credential(Credential credential){
         //this.id = credential.id;//id is not copied to save as new Credential.

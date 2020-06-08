@@ -21,4 +21,7 @@ public class CredentialBenefits extends Credential{
         super(credentialBenefits);
         this.beneficiaryType = credentialBenefits.beneficiaryType;
     }
+
+    @Override
+    public boolean isManuallyRevocable(){return false;}
 }

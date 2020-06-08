@@ -41,6 +41,9 @@ public class CredentialCredit extends Credential {
 
     private Float expiredAmount;
 
+    @Override
+    public boolean isManuallyRevocable(){return false;}
+
     public CredentialCredit(CredentialCredit credentialCredit) {
         super(credentialCredit);
         this.idBondareaCredit = credentialCredit.idBondareaCredit;

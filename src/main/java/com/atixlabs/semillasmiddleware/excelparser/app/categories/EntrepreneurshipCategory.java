@@ -102,7 +102,7 @@ public class EntrepreneurshipCategory implements Category {
 
     @Override
     public boolean isRequired() {
-        return true;
+        return false;
     }
 
     public String getType(){

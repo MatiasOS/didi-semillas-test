@@ -9,6 +9,7 @@ import com.atixlabs.semillasmiddleware.app.model.credential.constants.Credential
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialStatesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialTypesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
+import com.atixlabs.semillasmiddleware.app.model.credentialState.constants.RevocationReasonsCodes;
 import com.atixlabs.semillasmiddleware.app.repository.*;
 import com.atixlabs.semillasmiddleware.app.service.CredentialService;
 import com.google.gson.Gson;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -185,58 +187,58 @@ public class DidiService {
         //find all did-dni
         List<DidiAppUser> didiAppUsers = didiAppUserRepository.findAll();
 
-        if (didiAppUsers.size() <= 0)
+        if (didiAppUsers.size() <= 0) {
+            log.info("didiSync: No existen pedidos de didi-app pendientes para enviar hacia didi");
             return "didiSync: No existen pedidos de didi-app pendientes para enviar hacia didi";
+        }
 
         List<Credential> creditHolders = new ArrayList<>();
         List<Credential> beneficiaries = new ArrayList<>();
 
-        for (DidiAppUser didUser: didiAppUsers) {
-            if(didUser.getSyncStatus().equals(DidiSyncStatus.SYNC_MISSING.getCode())){
+        for (DidiAppUser didUser : didiAppUsers) {
+            if (didUser.getSyncStatus().equals(DidiSyncStatus.SYNC_MISSING.getCode())) {
                 //update all credentials because did has changed
                 creditHolders = credentialRepository.findByCreditHolderDni(didUser.getDni());
                 beneficiaries = credentialRepository.findByBeneficiaryDni(didUser.getDni());
-            }
-            else {//sync ok o sync error
+            } else {//sync ok o sync error
                 //create and emmit only pending credentials
                 Optional<CredentialState> pendingState = credentialStateRepository.findByStateName(CredentialStatesCodes.PENDING_DIDI.getCode());
                 creditHolders = credentialRepository.findByCreditHolderDniAndCredentialState(didUser.getDni(), pendingState.get());
                 beneficiaries = credentialRepository.findByBeneficiaryDniAndCredentialState(didUser.getDni(), pendingState.get());
             }
 
-                //3-Trabajo sobre cada credencial de beneficiario
-                //  es beneficiario de algun credito - debo emitir solamente su credencial.
-                //  Si getCreditHolderDni() != credential.getBeneficiaryDni() es beneficiario
-                //  IMPORTANT: cuando creditHolder = beneficiary ya se cubrirá en siguiente for
-                for (Credential credential : beneficiaries) {
-                    if (!credential.getCreditHolderDni().equals(credential.getBeneficiaryDni())) { // is familiar
-                        log.info("SYNC BENEFICIARY "+ credential.getId());
 
-                        if(credential.getCredentialDescription().equals(CredentialTypesCodes.CREDENTIAL_IDENTITY_FAMILY.getCode())) {
-                            //if it is, check if the beneficiary does not have an identity familiar with his did (with the holder dni)
-                            Optional<Credential> opNewIdentity = this.checkToCreateNewIdentityFamiliar(credential);
-                            if (opNewIdentity.isPresent()) {
-                                //get beneficiary did
-                                String receivedDid = didiAppUserRepository.findByDni(credential.getBeneficiaryDni()).getDid();
-                                updateCredentialDidAndDidiSync(opNewIdentity.get(), receivedDid);
-                            }
-                        }
-                        //update the credential
-                        //get the actual did
-                        String receivedDid = didUser.getDid();
-                        updateCredentialDidAndDidiSync(credential, receivedDid);
+            //3-Trabajo sobre cada credencial de beneficiario
+            //  es beneficiario de algun credito - debo emitir solamente su credencial.
+            //  Si getCreditHolderDni() != credential.getBeneficiaryDni() es beneficiario
+            //  IMPORTANT: cuando creditHolder = beneficiary ya se cubrirá en siguiente for
+            for (Credential credential : beneficiaries) {
+                if (!credential.getCreditHolderDni().equals(credential.getBeneficiaryDni())) { // is familiar
+                    log.info("SYNC BENEFICIARY " + credential.getId());
+
+                    if (credential.getCredentialDescription().equals(CredentialTypesCodes.CREDENTIAL_IDENTITY_FAMILY.getCode())) {
+                        //if it is, check if the beneficiary does not have an identity familiar with his did (with the holder dni)
+                        Optional<Credential> opNewIdentity = this.checkToCreateNewIdentityFamiliar(credential);
+                        if (opNewIdentity.isPresent()) {
+                            //get beneficiary did
+                            String receivedDid = didiAppUserRepository.findByDni(credential.getBeneficiaryDni()).getDid();
+                            updateCredentialDidAndDidiSync(opNewIdentity.get(), receivedDid);
                         }
                     }
-
-                //4-Creo y emito credenciales de titulares
-                for (Credential credential : creditHolders) {
-                    log.info("SYNC CREDIT HOLDERS " + credential.getId());
-                    String receivedDid = didiAppUserRepository.findByDni(credential.getCreditHolderDni()).getDid();
-                    this.updateCredentialDidAndDidiSync(credential, receivedDid);
+                    //update the credential
+                    //get the actual did
+                    String receivedDid = didUser.getDid();
+                    updateCredentialDidAndDidiSync(credential, receivedDid);
                 }
             }
 
-
+            //4-Creo y emito credenciales de titulares
+            for (Credential credential : creditHolders) {
+                log.info("SYNC CREDIT HOLDERS " + credential.getId());
+                String receivedDid = didiAppUserRepository.findByDni(credential.getCreditHolderDni()).getDid();
+                this.updateCredentialDidAndDidiSync(credential, receivedDid);
+            }
+        }
 
 
         log.info("didiSync: ended");
@@ -257,6 +259,7 @@ public class DidiService {
         }
         return Optional.empty();
     }
+
     private void updateCredentialDidAndDidiSync(Credential credential, String receivedDid){
         log.info("didiSync: credencial para evaluar: " +  credential.getId());
 
@@ -265,27 +268,35 @@ public class DidiService {
                 if (credential.getIdDidiCredential() != null) {
                     log.info("didiSync: 1.a Revocar credencial activa en didi");
 
-                    if (credentialService.revokeComplete(credential)) {
+                    if (credentialService.revokeComplete(credential, RevocationReasonsCodes.UPDATE_INTERNAL.getCode())) {
                         credential.setIdDidiReceptor(receivedDid);//registro el did recibido
                         createAndEmmitCertificateDidi(credential);
                     }
                 }
             break;
-            case PENDING_DIDI:
-                if (credential.getIdDidiCredential() != null) {
-                    log.info("didiSync: 1.b no-break continuo revocacion en semillas");
-                    credentialService.revokeCredentialOnlyOnSemillas(credential);
-                    }
 
+            case PENDING_DIDI:
+                boolean haveRevokeOk = true;
+                if (credential.isEmitted()) {
+                    log.info("didiSync: 1.b no-break continuo revocacion en semillas");
+                    //revoke on didi too. Because it has idDididCredential.
+                    haveRevokeOk = credentialService.revokeComplete(credential, RevocationReasonsCodes.UPDATE_INTERNAL.getCode());
+                }
+                else {
+                    haveRevokeOk = credentialService.revokeCredentialOnlyOnSemillas(credential, RevocationReasonsCodes.UPDATE_INTERNAL.getCode());
+                }
+
+                if(haveRevokeOk) {
                     log.info("didiSync: 2  doy de alta credenciales nuevas");
                     //String beneficiaryReceivedDid = didiAppUserRepository.findByDni(appUserDni).getDid();
                     credential.setIdDidiReceptor(receivedDid);//registro el did recibido
                     createAndEmmitCertificateDidi(credential);
-
+                }
 
                 break;
+
+            //keep this to remember that revoked dont have any logic in didi process (by the moment)
             case CREDENTIAL_REVOKE:
-              //TODO: Definir accionar con credenciales revocadas, por ahora las ignora");
                 break;
         }
     }
@@ -398,7 +409,7 @@ public class DidiService {
     }
 
     public boolean didiDeleteCertificate(String CredentialToRevokeDidiId) {
-
+        log.info("Revoking certificate on didi");
         Call<DidiEmmitCredentialResponse> callSync = endpointInterface.deleteCertificate(didiAuthToken, CredentialToRevokeDidiId);
 
         try {

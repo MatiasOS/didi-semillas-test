@@ -7,7 +7,6 @@ import com.atixlabs.semillasmiddleware.app.exceptions.NoExpiredConfigurationExis
 import com.atixlabs.semillasmiddleware.app.exceptions.PersonDoesNotExists;
 import com.atixlabs.semillasmiddleware.app.model.credential.Credential;
 import com.atixlabs.semillasmiddleware.app.model.credential.CredentialCredit;
-import com.atixlabs.semillasmiddleware.app.model.credential.CredentialIdentity;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialStatesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialTypesCodes;
 import com.atixlabs.semillasmiddleware.app.service.CredentialService;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(CredentialController.URL_MAPPING_CREDENTIAL)
-@CrossOrigin(origins = "*", methods= {RequestMethod.GET,RequestMethod.POST, RequestMethod.OPTIONS})
+@CrossOrigin(origins = "*", methods= {RequestMethod.GET,RequestMethod.POST, RequestMethod.PATCH})
 @Slf4j
 public class CredentialController {
 
@@ -60,8 +59,7 @@ public class CredentialController {
             return Collections.emptyList();
         }
 
-        List<CredentialDto> credentialsDto = credentials.stream().map(aCredential -> new CredentialDto(aCredential)).collect(Collectors.toList());
-        return credentialsDto;
+        return credentials.stream().map(aCredential -> CredentialDto.constructBasedOnCredentialType(aCredential)).collect(Collectors.toList());
     }
 
     @GetMapping("/states")
@@ -82,21 +80,38 @@ public class CredentialController {
         return credentialTypes;
     }
 
-
-    @PatchMapping("/revoke/{id}")
+    @GetMapping("/revocation-reasons")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> revokeCredential(@PathVariable @NotNull @Min(1) Long id){
-        //todo method on service-> try to revoke. Search the credential from id and then call the appropriate revoke method.
-
-            credentialService.revokeCredential(id);
-            return  ResponseEntity.status(HttpStatus.OK).body("Revoked succesfully");
-
-        /*else
-        {
-            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error there is no credential with id " + id);
-        }*/
-
+    public Map<Long, String> findRevocationReasons() {
+        //todo this is not the best option to obtain the reasons able by the user.
+        return credentialService.getRevocationReasonsForUser();
     }
+
+
+
+    @PatchMapping("/revoke/{idCredential}/reason/{idReason}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> revokeCredential(@PathVariable @NotNull @Min(1) Long idCredential, @PathVariable @NotNull @Min(1) Long idReason) {
+        Optional<String> opRevocationReason = credentialService.getReasonFromId(idReason);
+        if (opRevocationReason.isPresent()) {
+            Optional<Credential> credentialToRevoke = credentialService.getCredentialById(idCredential);
+            if (credentialToRevoke.isPresent()) {
+                if (credentialToRevoke.get().isManuallyRevocable()) {
+                    boolean revokeOk = credentialService.revokeCredential(idCredential, opRevocationReason.get());
+                    if (revokeOk)
+                        return ResponseEntity.status(HttpStatus.OK).body("Revoked successfully");
+                    else
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error trying to revoke credential with id: " + idCredential);
+                } else
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Credential with id: " + idCredential + " is not manually revocable");
+            } else {
+                log.error("There is no credential with id: " + idCredential);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("There is no credential with id: " + idCredential);
+            }
+        } else
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Is not possible to revoke with reason " + idReason);
+    }
+
 
 
     @PostMapping("/generate")

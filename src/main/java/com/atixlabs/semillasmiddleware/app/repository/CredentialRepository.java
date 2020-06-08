@@ -18,6 +18,7 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> , 
 
     Optional<Credential> findByBeneficiaryDniAndCredentialCategoryAndCredentialStateIn(Long beneficiaryDni, String credentialCategoryCode, List<CredentialState> credentialStateActivePending);
 
+<<<<<<< HEAD
     List<Credential> findByCreditHolderDni(Long dni);
 
     List<Credential> findByBeneficiaryDni(Long dni);
@@ -25,4 +26,9 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> , 
     List<Credential> findByCreditHolderDniAndCredentialState(Long dni, CredentialState state);
 
     List<Credential> findByBeneficiaryDniAndCredentialState(Long dni, CredentialState state);
+=======
+    ArrayList<Credential> findByCreditHolderDniIn(List<Long> dniList);
+
+    ArrayList<Credential> findByBeneficiaryDniIn(List<Long> dniList);
+>>>>>>> develop
 }

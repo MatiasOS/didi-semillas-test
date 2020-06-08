@@ -15,6 +15,7 @@ import com.atixlabs.semillasmiddleware.app.model.credential.constants.Credential
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialTypesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.PersonTypesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
+import com.atixlabs.semillasmiddleware.app.model.credentialState.RevocationReason;
 import com.atixlabs.semillasmiddleware.app.repository.*;
 import com.atixlabs.semillasmiddleware.app.service.CredentialService;
 import com.atixlabs.semillasmiddleware.excelparser.app.categories.AnswerCategoryFactory;
@@ -93,6 +94,9 @@ public class CredentialServiceTest {
 
     @Mock
     private ParameterConfigurationRepository parameterConfigurationRepository;
+
+    @Mock
+    private RevocationReasonRepository revocationReasonRepository;
 
     @Captor
     private ArgumentCaptor<CredentialCredit> credentialCreditCaptor;
@@ -379,6 +383,13 @@ public class CredentialServiceTest {
 
     private List<Credential> credentialsFilteredRevokedMock() {
         return credentialsMock().stream().filter(credential -> credential.getCredentialState().getStateName().equals(CredentialStatesCodes.CREDENTIAL_REVOKE.getCode())).collect(Collectors.toList());
+    }
+
+    private RevocationReason getRevocationReasonMock(){
+        RevocationReason reason = new RevocationReason();
+        reason.setId(1L);
+        reason.setReason("Razon de revocacion");
+        return  reason;
     }
 
 
@@ -756,6 +767,7 @@ public class CredentialServiceTest {
 
         //revoke
         when(credentialRepository.findById(anyLong())).thenReturn(Optional.of(getPendingCreditMock(getMockLoan(),getBeneficiaryMockWithoutDID())));
+        when(revocationReasonRepository.findByReason(anyString())).thenReturn(Optional.of(getRevocationReasonMock()));
 
 
         credentialService.updateCredentialCredit(getMockLoan(), creditCreated);
@@ -781,6 +793,7 @@ public class CredentialServiceTest {
         Assertions.assertEquals(creditCreated.getExpiredAmount(), creditUpdate.getExpiredAmount());
         Assertions.assertEquals(getMockLoan().getStatus(), creditUpdate.getCreditState());
         Assertions.assertEquals(CredentialStatesCodes.CREDENTIAL_REVOKE.getCode(), creditOld.getCredentialState().getStateName());
+        Assertions.assertEquals(getRevocationReasonMock().getReason(), creditOld.getRevocationReason().getReason());
     }
 
     @Test
@@ -807,6 +820,7 @@ public class CredentialServiceTest {
         when(credentialRepository.findById(anyLong())).thenReturn(Optional.of(getPendingCredentialHolderBenefitMock(getBeneficiaryMockWithoutDID())));
        //todo here is returning the same object, and when the first is revoked the second too
         when(credentialBenefitsRepository.findByCreditHolderDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(List.of(benefitFamiliar1,benefitFamiliar2));
+        when(revocationReasonRepository.findByReason(anyString())).thenReturn(Optional.of(getRevocationReasonMock()));
 
         Loan loan = getLoanWithFinishState();
         credentialService.updateCredentialCredit(loan, creditCreated);
@@ -840,11 +854,13 @@ public class CredentialServiceTest {
         Assertions.assertEquals(loan.getExpiredAmount(), creditUpdate.getExpiredAmount());
         //Assertions.assertEquals(loan.getStatus(), creditUpdate.getCreditState());
         Assertions.assertEquals(CredentialStatesCodes.CREDENTIAL_REVOKE.getCode(), creditOld.getCredentialState().getStateName());
+        Assertions.assertEquals(getRevocationReasonMock().getReason(), creditOld.getRevocationReason().getReason());
 
         //revoke
         Assertions.assertNotNull(credentialBenefitHolderRevoked.getDateOfRevocation());
         Assertions.assertEquals(CredentialTypesCodes.CREDENTIAL_BENEFITS.getCode(),credentialBenefitHolderRevoked.getCredentialDescription());
         Assertions.assertEquals(CredentialStatesCodes.CREDENTIAL_REVOKE.getCode(), credentialBenefitHolderRevoked.getCredentialState().getStateName());
+        Assertions.assertEquals(getRevocationReasonMock().getReason(), credentialBenefitHolderRevoked.getRevocationReason().getReason());
     }
 
 
@@ -868,6 +884,7 @@ public class CredentialServiceTest {
         when(credentialRepository.findById(anyLong())).thenReturn(Optional.of(getPendingCreditMock(getMockLoan(), getBeneficiaryMockWithoutDID())));
         when(credentialCreditRepository.findById(anyLong())).thenReturn(Optional.of(creditCreated));
         when(credentialBenefitsRepository.findByCreditHolderDniAndCredentialStateIn(anyLong(), anyList())).thenReturn(List.of(benefits)); //solamente tiene la suya de titular
+        when(revocationReasonRepository.findByReason(anyString())).thenReturn(Optional.of(getRevocationReasonMock()));
 
         Loan loan = getLoanWithExpiredAmount();
         credentialService.updateCredentialCredit(loan, creditCreated);
@@ -900,24 +917,29 @@ public class CredentialServiceTest {
         Assertions.assertEquals(loan.getExpiredAmount(), creditUpdate.getExpiredAmount());
         Assertions.assertEquals(loan.getStatus(), creditUpdate.getCreditState());
         Assertions.assertEquals(CredentialStatesCodes.CREDENTIAL_REVOKE.getCode(), creditOld.getCredentialState().getStateName());
+        Assertions.assertEquals(getRevocationReasonMock().getReason(), creditOld.getRevocationReason().getReason());
 
         //revocation asserts
         Assertions.assertNotNull(credentialCreditRevoked.getDateOfRevocation());
         Assertions.assertEquals(CredentialTypesCodes.CREDENTIAL_CREDIT.getCode(),credentialCreditRevoked.getCredentialDescription());
         Assertions.assertEquals(CredentialStatesCodes.CREDENTIAL_REVOKE.getCode(), credentialCreditRevoked.getCredentialState().getStateName());
+        Assertions.assertEquals(getRevocationReasonMock().getReason(), credentialCreditRevoked.getRevocationReason().getReason());
+
 
         Assertions.assertNotNull(credentialBenefitsRevoked.getDateOfRevocation());
         Assertions.assertEquals(CredentialTypesCodes.CREDENTIAL_BENEFITS.getCode(),credentialBenefitsRevoked.getCredentialDescription());
         Assertions.assertEquals(CredentialStatesCodes.CREDENTIAL_REVOKE.getCode(), credentialBenefitsRevoked.getCredentialState().getStateName());
+        Assertions.assertEquals(getRevocationReasonMock().getReason(), credentialBenefitsRevoked.getRevocationReason().getReason());
 
         Assertions.assertNotNull(credentialCreditRevoked2.getDateOfRevocation());
         Assertions.assertEquals(CredentialTypesCodes.CREDENTIAL_CREDIT.getCode(),credentialCreditRevoked2.getCredentialDescription());
         Assertions.assertEquals(CredentialStatesCodes.CREDENTIAL_REVOKE.getCode(), credentialCreditRevoked2.getCredentialState().getStateName());
+        Assertions.assertEquals(getRevocationReasonMock().getReason(), credentialCreditRevoked2.getRevocationReason().getReason());
 
         Assertions.assertNotNull(credentialBenefitsRevoked2.getDateOfRevocation());
         Assertions.assertEquals(CredentialTypesCodes.CREDENTIAL_BENEFITS.getCode(),credentialBenefitsRevoked2.getCredentialDescription());
         Assertions.assertEquals(CredentialStatesCodes.CREDENTIAL_REVOKE.getCode(), credentialBenefitsRevoked2.getCredentialState().getStateName());
-
+        Assertions.assertEquals(getRevocationReasonMock().getReason(), credentialBenefitsRevoked2.getRevocationReason().getReason());
 
     }
     
