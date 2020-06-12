@@ -233,6 +233,7 @@ public class DidiService {
                     String receivedDid = didUser.getDid();
                     updateCredentialDidAndDidiSync(credential, receivedDid);
                 }
+                log.info("Finalized didi sync for didi user " + didUser.getDni());
             }
 
             //4-Creo y emito credenciales de titulares
@@ -265,7 +266,7 @@ public class DidiService {
             setCredentialState(CredentialStatesCodes.PENDING_DIDI.getCode(), newFamiliarIdentity);
 
             credentialIdentityRepository.save(newFamiliarIdentity);
-            log.info("Credential identity familiar has been created");
+            log.info("Credential identity familiar has been created for dni " +credential.getBeneficiaryDni());
 
             return Optional.of(newFamiliarIdentity);
         }
@@ -288,22 +289,11 @@ public class DidiService {
             break;
 
             case PENDING_DIDI:
-                boolean haveRevokeOk = true;
-                if (credential.isEmitted()) {
-                    log.info("didiSync: 1.b no-break continuo revocacion en semillas");
-                    //revoke on didi too. Because it has idDididCredential.
-                    haveRevokeOk = credentialService.revokeComplete(credential, RevocationReasonsCodes.UPDATE_INTERNAL.getCode());
-                }
-                else {
-                    haveRevokeOk = credentialService.revokeCredentialOnlyOnSemillas(credential, RevocationReasonsCodes.UPDATE_INTERNAL.getCode());
-                }
+                log.info("didiSync: 2.  doy de alta credenciales nuevas");
+                //String beneficiaryReceivedDid = didiAppUserRepository.findByDni(appUserDni).getDid();
+                credential.setIdDidiReceptor(receivedDid);//registro el did recibido
+                createAndEmmitCertificateDidi(credential);
 
-                if(haveRevokeOk) {
-                    log.info("didiSync: 2.  doy de alta credenciales nuevas");
-                    //String beneficiaryReceivedDid = didiAppUserRepository.findByDni(appUserDni).getDid();
-                    credential.setIdDidiReceptor(receivedDid);//registro el did recibido
-                    createAndEmmitCertificateDidi(credential);
-                }
 
                 break;
 
@@ -451,7 +441,7 @@ public class DidiService {
                 credentialRepository.save(pendingCredential);
             } else {
                 //es una credencial con estado activo o revocado, debo crear una nueva.
-                //todo the cases must use the different builds that exist for credentials.
+                //todo the cases should use the different builds that exist for credentials. (constructors)
                 switch (CredentialCategoriesCodes.getEnumByStringValue(pendingCredential.getCredentialCategory())) {
                     case IDENTITY:
                         Optional<CredentialIdentity> credentialIdentityOp = credentialIdentityRepository.findById(pendingCredential.getId());
