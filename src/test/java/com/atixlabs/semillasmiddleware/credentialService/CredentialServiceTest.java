@@ -41,7 +41,9 @@ import org.mockito.Mock;
 import org.junit.Before;
 import org.mockito.*;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.test.context.junit4.SpringRunner;
+import retrofit2.http.HEAD;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -476,15 +478,18 @@ public class CredentialServiceTest {
 
     @Test
     public void getActiveCredentials() {
-        when(credentialRepository.findCredentialsWithFilter(null, null, null, null, null, null, Arrays.asList("Vigente"))).thenReturn((List<Credential>) credentialsFilteredActiveMock());
 
-        List<Credential> credentials = credentialService.findCredentials(null, null, null, null, null, null, Arrays.asList("Vigente"));
+        when(credentialRepository.findCredentialsWithFilter(null, null, null, null, null, Arrays.asList("Vigente"), null)).thenReturn((List<Credential>) credentialsFilteredActiveMock());
 
-        verify(credentialRepository).findCredentialsWithFilter(null, null, null, null, null, null, Arrays.asList("Vigente"));
+        Page<Credential> pageCredentials = credentialService.findCredentials(null, null, null, null, null, Arrays.asList("Vigente"), null);
+
+        verify(credentialRepository).findCredentialsWithFilter(null, null, null, null, null, Arrays.asList("Vigente"), null);
+
 
         //List<CredentialDto> credentialsDto = credentials.stream().map(aCredential -> new CredentialDto(aCredential)).collect(Collectors.toList());
-        log.info("credenciales " + credentials.toString());
 
+        List<Credential> credentials = pageCredentials.getContent();
+        log.info("credenciales " + credentials.toString());
 
         Assertions.assertTrue(credentials.size() == credentialsFilteredActiveMock().size()); // check if the amount of credentials filtered in the service is the correct one
         Assertions.assertEquals(credentialsFilteredActiveMock().get(0).getId(), credentials.get(0).getId());
@@ -499,12 +504,14 @@ public class CredentialServiceTest {
 
     @Test
     public void getRevokedCredentials() {
-        when(credentialRepository.findCredentialsWithFilter(null, null, null, null, null, null, Arrays.asList("Revocada"))).thenReturn((List<Credential>) credentialsFilteredRevokedMock());
+        when(credentialRepository.findCredentialsWithFilter(null, null, null, null, null, Arrays.asList("Revocada"), null)).thenReturn((List<Credential>) credentialsFilteredRevokedMock());
 
-        List<Credential> credentials = credentialService.findCredentials(null, null, null, null, null, null, Arrays.asList("Revocada"));
+        Page<Credential> pageCredentials = credentialService.findCredentials(null, null, null, null,  null, Arrays.asList("Revocada"), null);
 
-        verify(credentialRepository).findCredentialsWithFilter(null, null, null, null, null, null, Arrays.asList("Revocada"));
+        verify(credentialRepository).findCredentialsWithFilter(null, null, null, null, null, Arrays.asList("Revocada"), null);
 
+
+        List<Credential> credentials = pageCredentials.getContent();
         log.info("credenciales " + credentials.toString());
 
 

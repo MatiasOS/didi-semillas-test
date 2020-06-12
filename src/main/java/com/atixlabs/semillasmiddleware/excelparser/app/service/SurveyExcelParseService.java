@@ -106,7 +106,7 @@ public class SurveyExcelParseService extends ExcelParseService {
         for (SurveyForm surveyForm : surveyFormList) {
             if (!surveyForm.isValid(processExcelFileResult))
                 allFormValid = false;
-            log.info(surveyForm.toString());
+            //log.info(surveyForm.toString());
         }
 
         if(allFormValid) {

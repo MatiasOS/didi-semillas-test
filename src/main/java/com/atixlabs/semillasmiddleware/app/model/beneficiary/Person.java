@@ -1,8 +1,6 @@
 package com.atixlabs.semillasmiddleware.app.model.beneficiary;
 
 import com.atixlabs.semillasmiddleware.app.model.DIDHistoric.DIDHisotoric;
-import com.atixlabs.semillasmiddleware.app.model.application.Application;
-import com.atixlabs.semillasmiddleware.app.model.credential.Credential;
 import com.atixlabs.semillasmiddleware.excelparser.app.categories.PersonCategory;
 import lombok.*;
 
@@ -47,7 +45,7 @@ public class Person {
     //TODO review (delete static and use this)
     public static Person getPersonFromPersonCategory(PersonCategory personCategory) {
         Person person = new Person();
-        person.setDocumentNumber(personCategory.getIdNumber());
+        person.setDocumentNumber(personCategory.getDocumentNumber());
         person.setFirstName(personCategory.getName());
         person.setLastName(personCategory.getSurname());
         person.setBirthDate(personCategory.getBirthDate());

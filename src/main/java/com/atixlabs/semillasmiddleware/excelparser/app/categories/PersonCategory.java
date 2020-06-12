@@ -27,7 +27,7 @@ public class PersonCategory implements Category {
     private AnswerDto name;
     private AnswerDto surname;
     private AnswerDto idType;
-    private AnswerDto idNumber;
+    private AnswerDto documentNumber;
     private AnswerDto gender;
     private AnswerDto birthDate;
     private AnswerDto relation;
@@ -37,7 +37,7 @@ public class PersonCategory implements Category {
         this.name = new AnswerDto(PersonQuestion.NAME);
         this.surname = new AnswerDto(PersonQuestion.SURNAME);
         this.idType = new AnswerDto(PersonQuestion.ID_TYPE);
-        this.idNumber = new AnswerDto(PersonQuestion.ID_NUMBER);
+        this.documentNumber = new AnswerDto(PersonQuestion.ID_NUMBER);
         this.gender = new AnswerDto(PersonQuestion.GENDER);
         this.birthDate = new AnswerDto(PersonQuestion.BIRTHDATE);
         this.relation = new AnswerDto(PersonQuestion.RELATION);
@@ -68,7 +68,7 @@ public class PersonCategory implements Category {
                 this.idType.setAnswer(answerRow, processExcelFileResult);
                 break;
             case ID_NUMBER:
-                this.idNumber.setAnswer(answerRow, processExcelFileResult);
+                this.documentNumber.setAnswer(answerRow, processExcelFileResult);
                 break;
             case NAME:
                 this.name.setAnswer(answerRow, processExcelFileResult);
@@ -101,7 +101,7 @@ public class PersonCategory implements Category {
         List<AnswerDto> answers = new LinkedList<>();
         answers.add(this.name);
         answers.add(this.surname);
-        answers.add(this.idNumber);
+        answers.add(this.documentNumber);
         answers.add(this.gender);
         answers.add(this.birthDate);
         answers.add(this.relation);
@@ -112,7 +112,7 @@ public class PersonCategory implements Category {
 
     @Override
     public boolean isEmpty(){
-        return name.answerIsEmpty() && surname.answerIsEmpty() && idNumber.answerIsEmpty() && gender.answerIsEmpty() && birthDate.answerIsEmpty() && relation.answerIsEmpty();
+        return documentNumber.answerIsEmpty();
     }
 
     @Override
@@ -123,7 +123,7 @@ public class PersonCategory implements Category {
             case CHILD:
             case SPOUSE:
             case OTHER_KINSMAN:
-                return false;
+                return !(this.isEmpty());
         }
         return true;
     }
@@ -140,8 +140,8 @@ public class PersonCategory implements Category {
         return (String) idType.getAnswer();
     }
 
-    public Long getIdNumber() {
-        return (Long) idNumber.getAnswer();
+    public Long getDocumentNumber() {
+        return (Long) documentNumber.getAnswer();
     }
 
     public String getGender() {
@@ -164,7 +164,7 @@ public class PersonCategory implements Category {
                 ", name=" + name +
                 ", surname=" + surname +
                 ", idType=" + idType +
-                ", idNumber=" + idNumber +
+                ", idNumber=" + documentNumber +
                 ", gender=" + gender +
                 ", birthDate=" + birthDate +
                 ", relation=" + relation +

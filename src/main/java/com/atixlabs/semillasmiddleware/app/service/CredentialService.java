@@ -34,7 +34,10 @@ import com.atixlabs.semillasmiddleware.excelparser.dto.ProcessExcelFileResult;
 import com.atixlabs.semillasmiddleware.app.model.credential.Credential;
 import com.atixlabs.semillasmiddleware.util.DateUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.criterion.Order;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -58,6 +61,9 @@ public class CredentialService {
     private AnswerCategoryFactory answerCategoryFactory;
     private DidiService didiService;
     private RevocationReasonRepository revocationReasonRepository;
+
+    @Value("${credentials.pageSize}")
+    private String size;
 
 
     @Autowired
@@ -91,6 +97,52 @@ public class CredentialService {
             this.didiService = didiService;
             this.revocationReasonRepository = revocationReasonRepository;
     }
+
+
+
+    public Page<Credential> findCredentials(String credentialType, String name, String dniBeneficiary, String
+            idDidiCredential, String lastUpdate, List<String> credentialState, Integer pageNumber) {
+        List<Credential> credentials;
+        Pageable pageable = null;
+        if (pageNumber != null && pageNumber > 0 && this.size != null)
+            pageable = PageRequest.of(pageNumber, Integer.parseInt(size), Sort.by(Sort.Direction.ASC, "updated"));
+
+        credentials = credentialRepository.findCredentialsWithFilter(credentialType, name, dniBeneficiary, idDidiCredential, lastUpdate, credentialState, pageable);
+
+        return new PageImpl<>(credentials, pageable, credentials.size());
+    }
+
+    public Map<Long,String> getRevocationReasonsForUser(){
+        Map<Long, String> revocationReasons = new HashMap<>();
+        Optional<RevocationReason> expiredReason = revocationReasonRepository.findByReason(RevocationReasonsCodes.EXPIRED_INFO.getCode());
+        if(expiredReason.isPresent())
+            revocationReasons.put(expiredReason.get().getId(), expiredReason.get().getReason());
+        else
+            log.error("Error getting expired reason of revocation");
+
+        Optional<RevocationReason> unlinkingReason = revocationReasonRepository.findByReason(RevocationReasonsCodes.UNLINKING.getCode());
+        if(unlinkingReason.isPresent())
+            revocationReasons.put(unlinkingReason.get().getId(), unlinkingReason.get().getReason());
+        else
+            log.error("Error getting unlinking reason of revocation");
+
+        return revocationReasons;
+    }
+
+    public Optional<String> getReasonFromId(Long idReason){
+        if(idReason != null) {
+            Optional<RevocationReason> reason = revocationReasonRepository.findById(idReason);
+            if (reason.isPresent()) {
+                //validate if the reason could be one allowed to the user.
+                Map<Long, String> reasonsForUser = getRevocationReasonsForUser();
+                if (reasonsForUser.containsValue(reason.get().getReason()))
+                    return Optional.of(reason.get().getReason());
+            }
+        }
+        return Optional.empty();
+    }
+
+
 
 
     public void buildAllCredentialsFromForm(SurveyForm surveyForm, ProcessExcelFileResult processExcelFileResult) {
@@ -200,44 +252,6 @@ public class CredentialService {
         }
     }
 
-    public List<Credential> findCredentials(String credentialType, String name, String dniBeneficiary, String
-            idDidiCredential, String dateOfExpiry, String dateOfIssue, List<String> credentialState) {
-        List<Credential> credentials;
-        credentials = credentialRepository.findCredentialsWithFilter(credentialType, name, dniBeneficiary, idDidiCredential, dateOfExpiry, dateOfIssue, credentialState);
-        //order by update time asc
-        credentials.sort(Comparator.comparing(Credential::getUpdated).reversed());
-        return credentials;
-    }
-
-    public Map<Long,String> getRevocationReasonsForUser(){
-        Map<Long, String> revocationReasons = new HashMap<>();
-        Optional<RevocationReason> expiredReason = revocationReasonRepository.findByReason(RevocationReasonsCodes.EXPIRED_INFO.getCode());
-        if(expiredReason.isPresent())
-            revocationReasons.put(expiredReason.get().getId(), expiredReason.get().getReason());
-        else
-            log.error("Error getting expired reason of revocation");
-
-        Optional<RevocationReason> unlinkingReason = revocationReasonRepository.findByReason(RevocationReasonsCodes.UNLINKING.getCode());
-        if(unlinkingReason.isPresent())
-            revocationReasons.put(unlinkingReason.get().getId(), unlinkingReason.get().getReason());
-        else
-            log.error("Error getting unlinking reason of revocation");
-
-        return revocationReasons;
-    }
-
-    public Optional<String> getReasonFromId(Long idReason){
-        if(idReason != null) {
-            Optional<RevocationReason> reason = revocationReasonRepository.findById(idReason);
-            if (reason.isPresent()) {
-                //validate if the reason could be one allowed to the user.
-                Map<Long, String> reasonsForUser = getRevocationReasonsForUser();
-                if (reasonsForUser.containsValue(reason.get().getReason()))
-                    return Optional.of(reason.get().getReason());
-            }
-        }
-        return Optional.empty();
-    }
 
     private Person savePersonIfNew(Person person) {
         Optional<Person> personOptional = personRepository.findByDocumentNumber(person.getDocumentNumber());
