@@ -1,6 +1,7 @@
 package com.atixlabs.semillasmiddleware.app.repository;
 
 import com.atixlabs.semillasmiddleware.app.model.credential.Credential;
+import com.atixlabs.semillasmiddleware.app.model.credential.CredentialCredit;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -22,8 +23,13 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> , 
 
     List<Credential> findByBeneficiaryDni(Long dni);
 
-    List<Credential> findByCreditHolderDniAndCredentialState(Long dni, CredentialState state);
+    List<Credential> findByCreditHolderDniAndBeneficiaryDniAndCredentialStateIn(Long dniHolder, Long dniBeneficiary, List<CredentialState> states);
 
-    List<Credential> findByBeneficiaryDniAndCredentialState(Long dni, CredentialState state);
+    List<Credential> findByBeneficiaryDniAndCredentialStateIn(Long dni, List<CredentialState> states);
+
+    List<Credential> findByCreditHolderDniAndIdDidiReceptorNullOrIdDidiReceptorAndAndCredentialCategoryAndCredentialState(Long dniHolder, String didReceptor, String credentialCategoryCode, CredentialState state);
+
+    //did
+    List<Credential> findByIdDidiReceptor(String idReceptor);
 
 }

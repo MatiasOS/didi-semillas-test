@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 
 @Slf4j
@@ -24,15 +25,16 @@ public class DidiAppUserService {
 
     public String registerNewAppUser(DidiAppUserDto didiAppUserDto) {
 
-        DidiAppUser didiAppUser  = didiAppUserRepository.findByDni(didiAppUserDto.getDni());
+        Optional<DidiAppUser> opDidiAppUser  = didiAppUserRepository.findByDniAndActiveTrue(didiAppUserDto.getDni());
 
         //if DNI is new.
-        if (didiAppUser == null) {
-            didiAppUser = new DidiAppUser(didiAppUserDto);
+        if (opDidiAppUser.isEmpty()) {
+            DidiAppUser didiAppUser = new DidiAppUser(didiAppUserDto);
             didiAppUserRepository.save(didiAppUser);
             return "El nuevo usuario se registro correctamente.";
         }
 
+        DidiAppUser didiAppUser = opDidiAppUser.get();
         if (didiAppUser.getDid().equals(didiAppUserDto.getDid())) {
             //if DID is the same:
             switch (DidiSyncStatus.getEnumByStringValue(didiAppUser.getSyncStatus())) {
@@ -48,9 +50,13 @@ public class DidiAppUserService {
         }
         else {
             //if DID is different requires sync:
-            didiAppUser.setDid(didiAppUserDto.getDid());
-            didiAppUser.setSyncStatus(DidiSyncStatus.SYNC_MISSING.getCode());
+            //set the last did to no active, and set the new one.
+            didiAppUser.setActive(false);
             didiAppUserRepository.save(didiAppUser);
+
+            DidiAppUser didiAppUserNew = new DidiAppUser(didiAppUserDto);
+            didiAppUser.setSyncStatus(DidiSyncStatus.SYNC_MISSING.getCode());
+            didiAppUserRepository.save(didiAppUserNew);
             return "Se ha modificado el DID para un usuario que posee credenciales, se generarán nuevas credenciales.";
         }
     return "Ocurrio un error procesando la solicitud, intente nuevamente";
@@ -59,9 +65,11 @@ public class DidiAppUserService {
 
     public boolean updateAppUserStatusByCode(Long creditHolderDni, String syncStatusCode) {
 
-        DidiAppUser didiAppUser = didiAppUserRepository.findByDni(creditHolderDni);
+        Optional<DidiAppUser> opDidiAppUser = didiAppUserRepository.findByDniAndActiveTrue(creditHolderDni);
 
-        if (didiAppUser != null){
+        if (opDidiAppUser.isPresent()){
+            DidiAppUser didiAppUser = opDidiAppUser.get();
+
             didiAppUser.setSyncStatus(syncStatusCode);
             didiAppUserRepository.save(didiAppUser);
             return true;

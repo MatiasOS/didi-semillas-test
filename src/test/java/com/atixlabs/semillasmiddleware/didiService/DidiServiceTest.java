@@ -120,19 +120,21 @@ public class DidiServiceTest {
         return didiCreateCredentialResponse;
     }
 
+    //todo there is lot of when missing here!
     @Test
     @Ignore
     public void didiCredentialSyncEmpty() {
         ArrayList<DidiAppUser> didiAppUsers = new ArrayList<>();
-        when(didiAppUserRepository.findBySyncStatusIn(any(ArrayList.class))).thenReturn(didiAppUsers);
+        when(didiAppUserRepository.findAll()).thenReturn(didiAppUsers);
         String response = didiService.didiCredentialSync();
         Assertions.assertEquals(response, "No existen credenciales pendientes para enviar hacia didi");
     }
 
+    //todo there is lot of when missing here!
     @Test
     @Ignore
     public void didiCredentialSyncAllOk() {
-        when(didiAppUserRepository.findBySyncStatusIn(any(ArrayList.class))).thenReturn(getAppUserMockOneMissing());
+        when(didiAppUserRepository.findAll()).thenReturn(getAppUserMockOneMissing());
 
         //ArrayList<Credential> creditHolders = credentialRepository.findByCreditHolderDniIn(dniList);
         when(credentialRepository.findByCreditHolderDni(anyLong())).thenReturn(getCredentialsCreditHolder());

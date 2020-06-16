@@ -58,7 +58,7 @@ public class DidiAppUserServiceTest {
         DidiAppUser didiAppUserExisting = new DidiAppUser(new DidiAppUserDto(10000000L,"did:ethr:0x73c47226d044af432829b60d0de38d657b0643dc"));
         DidiAppUserDto didiAppUserDtoUpdate = new DidiAppUserDto(10000000L,"did:ethr:0x73c47226d044af432829b60d0de38d657b0643dcCAMBIO" );
 
-        when(didiAppUserRepository.findByDni(anyLong())).thenReturn(didiAppUserExisting);
+        when(didiAppUserRepository.findByDniAndActiveTrue(anyLong())).thenReturn(Optional.of(didiAppUserExisting));
 
         when(didiAppUserRepository.save(any(DidiAppUser.class))).thenReturn(didiAppUserExisting);
         String response = didiAppUserService.registerNewAppUser(didiAppUserDtoUpdate);
