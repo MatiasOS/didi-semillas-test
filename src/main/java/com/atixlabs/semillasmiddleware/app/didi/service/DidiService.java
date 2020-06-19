@@ -293,8 +293,8 @@ public class DidiService {
 
         if (didiCreateCredentialResponse != null && didiCreateCredentialResponse.getStatus().equals("success")) {
 
-            log.info("didiSync: certificateId to emmit: "+didiCreateCredentialResponse.getData().get_id());
-            DidiEmmitCredentialResponse didiEmmitCredentialResponse = emmitCertificateDidi(didiCreateCredentialResponse.getData().get_id());
+            log.info("didiSync: certificateId to emmit: "+didiCreateCredentialResponse.getData().get(0).get_id());
+            DidiEmmitCredentialResponse didiEmmitCredentialResponse = emmitCertificateDidi(didiCreateCredentialResponse.getData().get(0).get_id());
 
             if (didiEmmitCredentialResponse!=null)
                 log.info("didiSync: emmitCertificate Response: "+didiEmmitCredentialResponse.toString());
@@ -306,7 +306,7 @@ public class DidiService {
             }
             else {
                 log.error("didiSync: Fallo la emision de la certificado, borrando el certificado creado pero no-emitido del didi-issuer");
-                this.didiDeleteCertificate(didiCreateCredentialResponse.getData().get_id());
+                this.didiDeleteCertificate(didiCreateCredentialResponse.getData().get(0).get_id());
                 this.didiAppUserService.updateAppUserStatusByCode(credential.getCreditHolderDni(), DidiSyncStatus.SYNC_ERROR.getCode());
                 this.saveCredentialOnPending(credential);
             }
