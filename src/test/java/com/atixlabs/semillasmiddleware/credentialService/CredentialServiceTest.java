@@ -154,7 +154,7 @@ public class CredentialServiceTest {
         return loan;
     }
 
-    private Optional<CredentialBenefits> getCredentialHolderBenefitMock(Person beneficiary){
+    private CredentialBenefits getCredentialHolderBenefitMock(Person beneficiary){
         CredentialBenefits benefits = new CredentialBenefits();
         benefits.setId(1L);
         benefits.setBeneficiaryType(PersonTypesCodes.HOLDER.getCode());
@@ -166,7 +166,7 @@ public class CredentialServiceTest {
         benefits.setIdDidiCredential("1234L");
         benefits.setIdDidiReceptor("1234L");
 
-        return  Optional.of(benefits);
+        return  benefits;
     }
 
     private Optional<CredentialBenefits> getCredentialHolderBenefitRevokeMock(Person beneficiary){
@@ -578,8 +578,8 @@ public class CredentialServiceTest {
         when(credentialStateRepository.findByStateNameIn(anyList())).thenReturn(getStateActivePending());
         when(credentialCreditRepository.save(any(CredentialCredit.class))).thenReturn(getActiveCreditMock(getMockLoan(), getPersonMockWithDid().get()));
         //credential benefits
-        when(credentialBenefitsRepository.save(any(CredentialBenefits.class))).thenReturn(getCredentialHolderBenefitMock(getPersonMockWithDid().get()).get());
-        when(credentialBenefitsRepository.findByBeneficiaryDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(Optional.empty());
+        when(credentialBenefitsRepository.save(any(CredentialBenefits.class))).thenReturn(getCredentialHolderBenefitMock(getPersonMockWithDid().get()));
+        when(credentialBenefitsRepository.findByCreditHolderDniNotAndBeneficiaryDniAndCredentialStateIn(anyLong(), anyLong(), anyList())).thenReturn(Collections.emptyList());
 
         Loan loan = getMockLoan();
         credentialService.createNewCreditCredentials(loan);
@@ -626,7 +626,7 @@ public class CredentialServiceTest {
         when(credentialCreditRepository.save(any(CredentialCredit.class))).thenReturn(getPendingCreditMock(getMockLoan(), getBeneficiaryMockWithoutDID()));
         //credential benefits
         when(credentialBenefitsRepository.save(any(CredentialBenefits.class))).thenReturn(getPendingCredentialHolderBenefitMock(getPersonMockWithDid().get()));
-        when(credentialBenefitsRepository.findByBeneficiaryDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(Optional.empty());
+        when(credentialBenefitsRepository.findByCreditHolderDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(Collections.emptyList());
 
         Loan loan = getMockLoan();
         credentialService.createNewCreditCredentials(loan);
@@ -673,7 +673,7 @@ public class CredentialServiceTest {
         when(credentialCreditRepository.save(any(CredentialCredit.class))).thenReturn(getActiveCreditMock(getMockLoan(), getPersonMockWithDid().get()));
 
         //credential benefits
-        when(credentialBenefitsRepository.findByBeneficiaryDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(getCredentialHolderBenefitMock(getPersonMockWithDid().get()));
+        when(credentialBenefitsRepository.findByCreditHolderDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(List.of(getCredentialHolderBenefitMock(getPersonMockWithDid().get())));
 
         Loan loan = getMockLoan();
         credentialService.createNewCreditCredentials(loan);
@@ -770,7 +770,7 @@ public class CredentialServiceTest {
         when(credentialCreditRepository.save(any(CredentialCredit.class))).thenReturn(getPendingCreditMock(getMockLoan(), getBeneficiaryMockWithoutDID()));
 
         //credential benefits
-        when(credentialBenefitsRepository.findByBeneficiaryDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(getCredentialHolderBenefitMock(getBeneficiaryMockWithoutDID()));
+        when(credentialBenefitsRepository.findByCreditHolderDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(List.of(getCredentialHolderBenefitMock(getBeneficiaryMockWithoutDID())));
 
         //revoke
         when(credentialRepository.findById(anyLong())).thenReturn(Optional.of(getPendingCreditMock(getMockLoan(),getBeneficiaryMockWithoutDID())));
@@ -822,7 +822,7 @@ public class CredentialServiceTest {
         when(credentialCreditRepository.save(any(CredentialCredit.class))).thenReturn(getPendingCreditMock(getMockLoan(), getBeneficiaryMockWithoutDID()));
 
         //revoke process
-        when(credentialBenefitsRepository.findByBeneficiaryDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(Optional.of(benefits));
+        when(credentialBenefitsRepository.findByCreditHolderDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(List.of(benefits));
         when(credentialCreditRepository.findByCreditHolderDniAndCredentialStateIn(anyLong(),anyList())).thenReturn(Collections.emptyList()); // the holder dont have another credit
         when(credentialRepository.findById(anyLong())).thenReturn(Optional.of(getPendingCredentialHolderBenefitMock(getBeneficiaryMockWithoutDID())));
        //todo here is returning the same object, and when the first is revoked the second too

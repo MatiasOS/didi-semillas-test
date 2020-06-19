@@ -112,11 +112,11 @@ public class DidiServiceTest {
     private DidiCreateCredentialResponse createDidiCredentialResponseOkMock(){
         DidiCreateCredentialResponse didiCreateCredentialResponse = new DidiCreateCredentialResponse();
         didiCreateCredentialResponse.setStatus("success");
-        ArrayList<DidiCredential> didiCredentials = new ArrayList<>();
+        //ArrayList<DidiCredential> didiCredentials = new ArrayList<>();
         DidiCredential didiCredential = new DidiCredential();
         didiCredential.set_id("ID-VALIDO-DIDI");
-        didiCredentials.add(didiCredential);
-        didiCreateCredentialResponse.setData(didiCredentials);
+        //didiCredentials.add(didiCredential);
+        didiCreateCredentialResponse.setData(didiCredential);
         return didiCreateCredentialResponse;
     }
 

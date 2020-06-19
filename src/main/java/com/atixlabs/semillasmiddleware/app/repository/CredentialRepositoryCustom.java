@@ -10,4 +10,5 @@ public interface CredentialRepositoryCustom {
 
     List<Credential> findCredentialsWithFilter(String credentialType, String name, String dniBeneficiary, String idDidiCredential, String lastUpdate, List<String> credentialState, Pageable page);
 
+    List<Credential> findCredentialIdentitiesFromSurvey(Long dni, List<String> states, String did);
 }

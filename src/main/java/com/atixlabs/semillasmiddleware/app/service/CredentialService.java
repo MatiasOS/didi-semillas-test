@@ -3,6 +3,7 @@ package com.atixlabs.semillasmiddleware.app.service;
 import com.atixlabs.semillasmiddleware.app.bondarea.model.Loan;
 import com.atixlabs.semillasmiddleware.app.bondarea.model.constants.LoanStatusCodes;
 import com.atixlabs.semillasmiddleware.app.bondarea.repository.LoanRepository;
+import com.atixlabs.semillasmiddleware.app.didi.model.DidiAppUser;
 import com.atixlabs.semillasmiddleware.app.didi.service.DidiService;
 import com.atixlabs.semillasmiddleware.app.exceptions.NoExpiredConfigurationExists;
 import com.atixlabs.semillasmiddleware.app.exceptions.PersonDoesNotExists;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -448,21 +450,22 @@ public class CredentialService {
         return credentialCredit;
     }
 
-
+    //this is an old method, merge with new one!
     public void createNewBenefitsCredential(Person beneficiary, PersonTypesCodes personType) {
         log.info("Creating Credential Benefits");
         List<CredentialState> pendingAndActiveState = credentialStateRepository.findByStateNameIn(List.of(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode(), CredentialStatesCodes.PENDING_DIDI.getCode()));
         if (pendingAndActiveState.size() == 2) {
-            Optional<CredentialBenefits> opBenefits = credentialBenefitsRepository.findByBeneficiaryDniAndCredentialStateInAndBeneficiaryType(beneficiary.getDocumentNumber(), pendingAndActiveState, personType.getCode());
+            List<CredentialBenefits> benefitHolder = credentialBenefitsRepository.findByCreditHolderDniAndCredentialStateInAndBeneficiaryType(beneficiary.getDocumentNumber(), pendingAndActiveState, personType.getCode());
             //create benefit if person does not have one or | do not have the type wanted to create. Or is not Active nor pending
-            if (opBenefits.isEmpty()) {
-                CredentialBenefits benefits = this.buildBenefitsCredential(beneficiary, personType);
+            if (benefitHolder.size() == 0) {
+                /*CredentialBenefits benefits = this.buildBenefitsCredential(beneficiary, personType);
 
                 //get the new id and save it on id historic
                 benefits = credentialBenefitsRepository.save(benefits);
                 benefits.setIdHistorical(benefits.getId());
                 credentialBenefitsRepository.save(benefits);
                 log.info("Credential Credit created for dni: " + beneficiary.getDocumentNumber());
+                 */
             } else {
                 log.info("Person with dni " + beneficiary.getDocumentNumber() + " had already a credential benefits");
             }
@@ -473,14 +476,14 @@ public class CredentialService {
     /**
      *
      * @param beneficiary
-     * @param personType
+     * @param holder
      * @return
      */
-    public CredentialBenefits buildBenefitsCredential(Person beneficiary, PersonTypesCodes personType){
+    public CredentialBenefits buildBenefitsCredential(Person beneficiary, Person holder){
             CredentialBenefits benefits = new CredentialBenefits();
 
             //Person is holder or family
-            if (personType.equals(PersonTypesCodes.HOLDER)) {
+            if (holder.getDocumentNumber().equals(beneficiary.getDocumentNumber())) {
                 benefits.setBeneficiaryType(PersonTypesCodes.HOLDER.getCode());
                 benefits.setCredentialCategory(CredentialCategoriesCodes.BENEFIT.getCode());
                 benefits.setCredentialDescription(CredentialTypesCodes.CREDENTIAL_BENEFITS.getCode());
@@ -500,10 +503,10 @@ public class CredentialService {
             benefits.setBeneficiaryLastName(beneficiary.getLastName());
 
 
-            benefits.setCreditHolderDni(beneficiary.getDocumentNumber());
-            benefits.setCreditHolder(beneficiary);
-            benefits.setCreditHolderFirstName(beneficiary.getFirstName());
-            benefits.setCreditHolderLastName(beneficiary.getLastName());
+            benefits.setCreditHolderDni(holder.getDocumentNumber());
+            benefits.setCreditHolder(holder);
+            benefits.setCreditHolderFirstName(holder.getFirstName());
+            benefits.setCreditHolderLastName(holder.getLastName());
             //End creditHolder changes
 
             //TODO this should be took from DB - credentialCredit.setIdDidiIssuer();
@@ -904,6 +907,168 @@ public class CredentialService {
         return haveRevoke;
     }
 
+
+    /////
+
+    public List<Credential> getCredentialsBeingHolder(Long didDni, String did){
+        Optional<CredentialState> pendingState = credentialStateRepository.findByStateName(CredentialStatesCodes.PENDING_DIDI.getCode());
+        List<Credential> holderCredentials = credentialRepository.findByCreditHolderDniAndBeneficiaryDniAndCredentialStateIn(didDni, didDni, List.of(pendingState.get()));
+
+        //add identities to emit being the holder of them
+        List<Credential> credentialIdentitiesOfHolder = this.getIdentitiesFromSurveyBeingHolder(didDni, did);
+        holderCredentials.addAll(credentialIdentitiesOfHolder);
+        //remove the equals (for ex. the identity Titular)
+        holderCredentials = holderCredentials.stream().distinct().collect(Collectors.toList());
+
+        return holderCredentials;
+    }
+
+
+    /**
+     * Get all the credential identities (Titular or Familiar) given the holderDni, and if they were set, the same did.
+     * These identities are from the survey and need to be emmit with the holder DID.
+     *
+     * if the 3° credential identity is created but not emitted, filtering with the did in here, wont be catch
+     * @param didDni
+     * @param did
+     * @return
+     */
+    private List<Credential> getIdentitiesFromSurveyBeingHolder(Long didDni, String did){
+        //get all the credential identities of the holder created by survey, credentials could have the idReceptor or not (if emmit have failed)
+        List<Credential> identitiesFromSurvey = credentialRepository.findCredentialIdentitiesFromSurvey(didDni, List.of(CredentialStatesCodes.PENDING_DIDI.getCode()),  did);
+        return identitiesFromSurvey;
+    }
+
+
+    public List<Credential> getCredentialsBeingBeneficiary(Long didDni, String did){
+        List<Credential> credentialsBeingBeneficiary = new ArrayList<>();
+        Optional<CredentialState> pendingState = credentialStateRepository.findByStateName(CredentialStatesCodes.PENDING_DIDI.getCode());
+
+        //get identities of did user (in pending)
+        List<CredentialIdentity> identitiesOfDidiUserPending = credentialIdentityRepository.findByIdDidiReceptorAndBeneficiaryDniAndCredentialDescriptionAndCredentialStateIn(did, didDni, CredentialTypesCodes.CREDENTIAL_IDENTITY_FAMILY.getCode(), List.of(pendingState.get()));
+        credentialsBeingBeneficiary.addAll(identitiesOfDidiUserPending);
+
+        //create new identities where the didUser does not have an identity familiar for each holder.
+        credentialsBeingBeneficiary.addAll(this.checkToCreateNewIdentityFamiliar(didDni, did));
+
+        //get the new benefits (in pending)
+        List<CredentialBenefits> benefitsFamiliar = credentialBenefitsRepository.findByCreditHolderDniNotAndBeneficiaryDniAndCredentialStateIn(didDni, didDni, List.of(pendingState.get()));
+        credentialsBeingBeneficiary.addAll(benefitsFamiliar);
+
+        //get the new benefit to emit
+        credentialsBeingBeneficiary.addAll(this.checkToCreateNewBenefitsFamiliar(didDni, did));
+
+        return credentialsBeingBeneficiary;
+    }
+
+
+    /**
+     * Create the 3° credential identity (the other 2 are the one created after survey has uploaded -- identidad titular, identidad familiar --)
+     * For each different holder, the familiar with did must have a 3° identity with his did.
+     * @param didDni
+     * @return Optional<Credential>
+     */
+    private List<CredentialIdentity> checkToCreateNewIdentityFamiliar(Long didDni, String did) {
+        List<CredentialIdentity> newIdentitiesToEmit = new ArrayList<>();
+
+        List<CredentialState> pendingActiveState = credentialStateRepository.findByStateNameIn(List.of(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode(), CredentialStatesCodes.PENDING_DIDI.getCode()));
+        //get all the identities of the did user
+        List<CredentialIdentity> credentialsIdentitiesBeingFamiliar = credentialIdentityRepository.findByCreditHolderDniNotAndBeneficiaryDniAndCredentialDescriptionAndCredentialStateIn(
+                didDni, didDni, CredentialTypesCodes.CREDENTIAL_IDENTITY_FAMILY.getCode(), pendingActiveState);
+
+        if(credentialsIdentitiesBeingFamiliar.size() == 0)
+            return Collections.emptyList();
+
+        List<Long> differentHoldersDnis = credentialsIdentitiesBeingFamiliar.stream().map(CredentialIdentity::getCreditHolderDni).distinct().collect(Collectors.toList());
+
+        //for each holder, filter the identities from both.
+        for (Long holderDni : differentHoldersDnis) {
+            List<CredentialIdentity> identityMatching = credentialsIdentitiesBeingFamiliar.stream().filter(aIdentity ->
+                    aIdentity.getCreditHolderDni().equals(holderDni)).collect(Collectors.toList());
+
+            //if there is only 1, its needed to create his own identity.
+            if (identityMatching.size() == 1) {
+                log.info("didiSync: Creating new Identity familiar for dni " + didDni);
+                //here create the identity familiar with did of the beneficiary
+                //use as a base credential, the same identity familiar. The difference will be what did it contains.
+                CredentialIdentity newFamiliarIdentity = new CredentialIdentity(identityMatching.get(0));
+                newFamiliarIdentity.setIdDidiCredential(null);
+                newFamiliarIdentity.setDateOfIssue(DateUtil.getLocalDateTimeNow());
+                newFamiliarIdentity.setIdDidiReceptor(did);
+                setCredentialState(CredentialStatesCodes.PENDING_DIDI.getCode(), newFamiliarIdentity);
+
+                credentialIdentityRepository.save(newFamiliarIdentity);
+                log.info("Credential identity familiar has been created for dni " + didDni);
+
+                newIdentitiesToEmit.add(newFamiliarIdentity);
+            }
+            else{
+                log.info("did user "+ didDni + " has already his own credential identity");
+            }
+        }
+
+        return newIdentitiesToEmit;
+    }
+
+
+
+    private List<CredentialBenefits> checkToCreateNewBenefitsFamiliar(Long didDni, String did){
+        List<CredentialState> pendingActiveState = credentialStateRepository.findByStateNameIn(List.of(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode(), CredentialStatesCodes.PENDING_DIDI.getCode()));
+
+        List<CredentialBenefits> newBenefitsToEmit = new ArrayList<>();
+        Optional<Person> beneficiary = personRepository.findByDocumentNumber(didDni);
+
+        //this person has not been loaded in the survey
+        if(beneficiary.isEmpty())
+            return Collections.emptyList();
+
+        //get the existent benefits(familiar) to compare if its needed to create another.
+        List<CredentialBenefits> benefitsFamiliar = credentialBenefitsRepository.findByCreditHolderDniNotAndBeneficiaryDniAndCredentialStateIn(didDni, didDni, pendingActiveState);
+        List<Long> holderDniOfBenefits = benefitsFamiliar.stream().map(CredentialBenefits::getCreditHolderDni).collect(Collectors.toList());
+
+
+        //get all the identities, to get the holders dni of each one.
+        List<CredentialIdentity> identitiesFamiliarOfDidUser = credentialIdentityRepository.findByIdDidiReceptorAndBeneficiaryDniAndCredentialDescriptionAndCredentialStateIn(did, didDni,
+                CredentialTypesCodes.CREDENTIAL_IDENTITY_FAMILY.getCode(), pendingActiveState);
+
+        List<Long> holdersDnis = identitiesFamiliarOfDidUser.stream().map(Credential::getCreditHolderDni).collect(Collectors.toList());
+
+        //check if the holder have any credential credit (active or pending)
+        for (Long holderDni: holdersDnis) {
+            if(this.hasHolderAnyCredentialCredit(holderDni) && !this.benefitsAlreadyExists(holderDni, holderDniOfBenefits)){
+
+                //get person with holderSDni
+                Optional<Person> holder = personRepository.findByDocumentNumber(holderDni);
+
+                log.info("Creting new benefits familiar for " + didDni + " with holder " + holderDni);
+                CredentialBenefits newFamiliarBenefits = this.buildBenefitsCredential(beneficiary.get(), holder.get());
+
+                credentialBenefitsRepository.save(newFamiliarBenefits);
+                log.info("Credential benefits familiar has been created for dni " + didDni);
+                newBenefitsToEmit.add(newFamiliarBenefits);
+            } else {
+                log.info("Didi user " + didDni + " is not valid for new credentials benefits");
+            }
+        }
+
+        return newBenefitsToEmit;
+    }
+
+    private void setCredentialState(String credentialStateString, Credential credential) {
+        Optional<CredentialState> credentialState = credentialStateRepository.findByStateName(credentialStateString);
+        credentialState.ifPresent(credential::setCredentialState);
+    }
+
+    private boolean hasHolderAnyCredentialCredit(Long holderDni){
+        List<CredentialState> pendingActiveState = credentialStateRepository.findByStateNameIn(List.of(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode(), CredentialStatesCodes.PENDING_DIDI.getCode()));
+
+        List<CredentialCredit> credentialCreditsOfHolder = credentialCreditRepository.findByCreditHolderDniAndCredentialStateIn(holderDni, pendingActiveState);
+        return credentialCreditsOfHolder.size() > 0;
+    }
+
+    private boolean benefitsAlreadyExists(Long holderDni, List<Long> holderOfBenefits){
+        return holderOfBenefits.stream().anyMatch(aHolderDNi -> aHolderDNi.equals(holderDni));
+    }
 
 }
 

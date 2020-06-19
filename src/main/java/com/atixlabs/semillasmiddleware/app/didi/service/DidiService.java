@@ -4,14 +4,17 @@ import com.atixlabs.semillasmiddleware.app.didi.constant.DidiSyncStatus;
 import com.atixlabs.semillasmiddleware.app.didi.dto.*;
 import com.atixlabs.semillasmiddleware.app.didi.model.DidiAppUser;
 import com.atixlabs.semillasmiddleware.app.didi.repository.DidiAppUserRepository;
+import com.atixlabs.semillasmiddleware.app.model.beneficiary.Person;
 import com.atixlabs.semillasmiddleware.app.model.credential.*;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialCategoriesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialStatesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialTypesCodes;
+import com.atixlabs.semillasmiddleware.app.model.credential.constants.PersonTypesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.constants.RevocationReasonsCodes;
 import com.atixlabs.semillasmiddleware.app.repository.*;
 import com.atixlabs.semillasmiddleware.app.service.CredentialService;
+import com.atixlabs.semillasmiddleware.util.DateUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +31,11 @@ import retrofit2.Retrofit;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -51,6 +56,7 @@ public class DidiService {
     private CredentialDwellingRepository credentialDwellingRepository;
     private CredentialBenefitsRepository credentialBenefitsRepository;
     private CredentialCreditRepository credentialCreditRepository;
+    private PersonRepository personRepository;
 
     private String didiBaseUrl;
     private String didiUsername;
@@ -90,14 +96,14 @@ public class DidiService {
             CredentialDwellingRepository credentialDwellingRepository,
             CredentialBenefitsRepository credentialBenefitsRepository,
             CredentialCreditRepository credentialCreditRepository,
-            @Value("${didi.base_url}") String didiBaseUrl,
+            PersonRepository personRepository, @Value("${didi.base_url}") String didiBaseUrl,
             @Value("${didi.username}") String didiUsername,
             @Value("${didi.password}") String didiPassword,
-            @Value("${didi.template_code_identity}") String didiTemplateCodeIdentity,
-            @Value("${didi.template_code_entrepreneurship}") String didiTemplateCodeEntrepreneurship,
-            @Value("${didi.template_code_dwelling}") String didiTemplateCodeDwelling,
-            @Value("${didi.template_code_benefit}") String didiTemplateCodeBenefit,
-            @Value("${didi.template_code_credit}") String didiTemplateCodeCredit) {
+            @Value("${didi.semillas.template_code_identity}") String didiTemplateCodeIdentity,
+            @Value("${didi.semillas.template_code_entrepreneurship}") String didiTemplateCodeEntrepreneurship,
+            @Value("${didi.semillas.template_code_dwelling}") String didiTemplateCodeDwelling,
+            @Value("${didi.semillas.template_code_benefit}") String didiTemplateCodeBenefit,
+            @Value("${didi.semillas.template_code_credit}") String didiTemplateCodeCredit) {
 
         this.didiAppUserService = didiAppUserService;
         this.didiAppUserRepository = didiAppUserRepository;
@@ -111,6 +117,7 @@ public class DidiService {
         this.credentialDwellingRepository = credentialDwellingRepository;
         this.credentialBenefitsRepository = credentialBenefitsRepository;
         this.credentialCreditRepository = credentialCreditRepository;
+        this.personRepository = personRepository;
         this.didiBaseUrl = didiBaseUrl;
         this.didiUsername = didiUsername;
         this.didiPassword = didiPassword;
@@ -200,21 +207,22 @@ public class DidiService {
                 Optional<DidiAppUser> opOldDidUser = didiAppUserRepository.findTopByActiveFalseAndDniOrderByDateOfRegistrationDesc(didUser.getDni());
 
                 List<Credential> activeCredentialsWithOldDid = new ArrayList<>();
-                if(opOldDidUser.isPresent())
-                  activeCredentialsWithOldDid = credentialRepository.findByIdDidiReceptor(opOldDidUser.get().getDid());
-                //todo check the change of id didi in the process !
+                if(opOldDidUser.isPresent()){
+                    //get all the credentials with the old didi to re-emit with the new didi
+                    Optional<CredentialState> opActiveState = credentialStateRepository.findByStateName(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode());
+                    activeCredentialsWithOldDid = credentialRepository.findByIdDidiReceptorAndCredentialState(opOldDidUser.get().getDid(), opActiveState.get());
+                    credentialsBeingHolder.addAll(activeCredentialsWithOldDid);
+                }
+
+            } else{
+                log.info("Didi user " + didUser.getDni() + " is not new, try to synchronize only pending credentials");
             }
 
-            //sync ok or sync error
-                //create and emmit only pending credentials
-                log.info("Didi user " + didUser.getDni() + " is not new, try to synchronize only pending credentials");
-                Optional<CredentialState> pendingState = credentialStateRepository.findByStateName(CredentialStatesCodes.PENDING_DIDI.getCode());
-                credentialsBeingHolder = credentialRepository.findByCreditHolderDniAndBeneficiaryDniAndCredentialStateIn(didUser.getDni(), didUser.getDni(), List.of(pendingState.get()));
-                credentialsBeingBeneficiary = credentialRepository.findByBeneficiaryDniAndCredentialStateIn(didUser.getDni(), List.of(pendingState.get()));
+               //sync ok or sync error
 
-                //add identities to emmit with holder did
-                List<Credential> credentialIdentitiesOfHolder = getCredentialIdentitiesFromSurvey(didUser);
-                credentialsBeingHolder.addAll(credentialIdentitiesOfHolder);
+                //create and emmit only pending credentials
+                credentialsBeingHolder.addAll(credentialService.getCredentialsBeingHolder(didUser.getDni(), didUser.getDid()));
+                credentialsBeingBeneficiary = credentialService.getCredentialsBeingBeneficiary(didUser.getDni(), didUser.getDid());
 
 
             //3-Trabajo sobre cada credencial de beneficiario
@@ -222,73 +230,31 @@ public class DidiService {
             //  Si getCreditHolderDni() != credential.getBeneficiaryDni() es beneficiario
             //  IMPORTANT: cuando creditHolder = beneficiary ya se cubrirá en siguiente for
             for (Credential credential : credentialsBeingBeneficiary) {
-                if (!credential.getCreditHolderDni().equals(credential.getBeneficiaryDni())) { // is familiar
-                    log.info("SYNC BENEFICIARY " + credential.getId() + " " + credential.getCredentialDescription());
+                if (!credential.getCreditHolderDni().equals(credential.getBeneficiaryDni())) { // is familiar (todo: this could be made in the query)
+                    log.info("SYNC BENEFICIARY dni:" + credential.getBeneficiaryDni() + " credential id: " + credential.getId() + " type: " + credential.getCredentialDescription());
 
-                    if (credential.getCredentialDescription().equals(CredentialTypesCodes.CREDENTIAL_IDENTITY_FAMILY.getCode())) {
-                        //if it is, check if the beneficiary does not have an identity familiar with his did (with the holder dni)
-                        Optional<Credential> opNewIdentity = this.checkToCreateNewIdentityFamiliar(credential);
-                        if (opNewIdentity.isPresent()) {
-                            //get beneficiary did (to assign in credential identity)
-                            String receivedDid = didUser.getDid();
-                            //updateCredentialDidAndDidiSync(opNewIdentity.get(), receivedDid);
-                        }
-                    }
-                    //update the credential
-                    //get the actual did
                     String receivedDid = didUser.getDid();
-                    //updateCredentialDidAndDidiSync(credential, receivedDid);
+                    //sync credential
+                    this.updateCredentialDidAndDidiSync(credential, receivedDid);
                 }
             }
 
             //4-Creo y emito credenciales de titulares
             for (Credential credential : credentialsBeingHolder) {
-                log.info("SYNC CREDIT HOLDER " + credential.getId() + " " + credential.getCredentialDescription());
+                log.info("SYNC CREDIT HOLDER dni:" + credential.getCreditHolderDni() + " credential id: " + credential.getId() + " type: " + credential.getCredentialDescription());
                 String receivedDid = didUser.getDid(); //why not didiUser.getDidi(); (using the didiUser of the for)
-                //this.updateCredentialDidAndDidiSync(credential, receivedDid);
+                this.updateCredentialDidAndDidiSync(credential, receivedDid);
+
             }
+
             log.info("Finalized didi sync for didi user " + didUser.getDni());
         }
-
-
+        
         log.info("didiSync: ended");
         return "didiSync: ended";
     }
 
-    //TODO move to credentialService
-    private List<Credential> getCredentialIdentitiesFromSurvey(DidiAppUser didiUser){
-        Optional<CredentialState> pendingState = credentialStateRepository.findByStateName(CredentialStatesCodes.PENDING_DIDI.getCode());
-        //get all the credential identities of the holder created by survey, credentials could have the idReceptor or not (if emmit have failed)
-        List<Credential> identitiesFromSurvey = credentialRepository.findByCreditHolderDniAndIdDidiReceptorNullOrIdDidiReceptorAndAndCredentialCategoryAndCredentialState(didiUser.getDni(), didiUser.getDid(), CredentialCategoriesCodes.IDENTITY.getCode(), pendingState.get());
-        return identitiesFromSurvey;
-    }
 
-
-
-    //TODO move to credentialService
-    /**
-     * Create the 3° credential identity (the other 2 are the one created after survey has uploaded -- identidad titular, identidad familiar --)
-     * @param credential
-     * @return
-     */
-    private Optional<Credential> checkToCreateNewIdentityFamiliar(Credential credential) {
-        List<CredentialState> pendingActiveState = credentialStateRepository.findByStateNameIn(List.of(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode(), CredentialStatesCodes.PENDING_DIDI.getCode()));
-        List<CredentialIdentity> credentialsIdentities = credentialIdentityRepository.findByCreditHolderDniAndBeneficiaryDniAndCredentialStateIn(credential.getCreditHolderDni(), credential.getBeneficiaryDni(), pendingActiveState);
-        if (credentialsIdentities.size() == 1) {
-            log.info("didiSync: Creating new Identity familiar for dni "+ credential.getBeneficiaryDni());
-            //here create the identity familiar with did of the beneficiary
-            //use as a base credential, the same identity familiar. The difference will be what did contain.
-            CredentialIdentity newFamiliarIdentity = new CredentialIdentity((CredentialIdentity) credential);
-            newFamiliarIdentity.setIdDidiCredential(null);
-            setCredentialState(CredentialStatesCodes.PENDING_DIDI.getCode(), newFamiliarIdentity);
-
-            credentialIdentityRepository.save(newFamiliarIdentity);
-            log.info("Credential identity familiar has been created for dni " +credential.getBeneficiaryDni());
-
-            return Optional.of(newFamiliarIdentity);
-        }
-        return Optional.empty();
-    }
 
     private void updateCredentialDidAndDidiSync(Credential credential, String receivedDid){
         log.info("didiSync: credencial para evaluar: " +  credential.getId() + " " + credential.getCredentialDescription());
@@ -327,8 +293,8 @@ public class DidiService {
 
         if (didiCreateCredentialResponse != null && didiCreateCredentialResponse.getStatus().equals("success")) {
 
-            log.info("didiSync: certificateId to emmit: "+didiCreateCredentialResponse.getData().get(0).get_id());
-            DidiEmmitCredentialResponse didiEmmitCredentialResponse = emmitCertificateDidi(didiCreateCredentialResponse.getData().get(0).get_id());
+            log.info("didiSync: certificateId to emmit: "+didiCreateCredentialResponse.getData().get_id());
+            DidiEmmitCredentialResponse didiEmmitCredentialResponse = emmitCertificateDidi(didiCreateCredentialResponse.getData().get_id());
 
             if (didiEmmitCredentialResponse!=null)
                 log.info("didiSync: emmitCertificate Response: "+didiEmmitCredentialResponse.toString());
@@ -340,7 +306,7 @@ public class DidiService {
             }
             else {
                 log.error("didiSync: Fallo la emision de la certificado, borrando el certificado creado pero no-emitido del didi-issuer");
-                this.didiDeleteCertificate(didiCreateCredentialResponse.getData().get(0).get_id());
+                this.didiDeleteCertificate(didiCreateCredentialResponse.getData().get_id());
                 this.didiAppUserService.updateAppUserStatusByCode(credential.getCreditHolderDni(), DidiSyncStatus.SYNC_ERROR.getCode());
                 this.saveCredentialOnPending(credential);
             }
@@ -393,9 +359,9 @@ public class DidiService {
     public DidiCreateCredentialResponse createCertificateDidiCall(String didiTemplateCode, DidiCredentialData didiCredentialData) {
         log.info("didiSync: createCertificateDidiCall");
 
-        Call<DidiCreateCredentialResponse> callSync = endpointInterface.createCertificate(didiAuthToken,didiTemplateCode,true,didiCredentialData);
+        Call<DidiCreateCredentialResponse> callSync = endpointInterface.createCertificate(didiAuthToken,didiTemplateCode,true, didiCredentialData);
 
-        log.info(didiCredentialData.toString());
+        log.info("credential to sync" + didiCredentialData.toString());
         try {
             Response<DidiCreateCredentialResponse> response = callSync.execute();
             log.info("didiSync: createCertificateDidiCall - response:");
@@ -528,6 +494,17 @@ public class DidiService {
             log.error("getAllCredentials: Didi Request error", ex);
         }
         return null;
+    }
+
+
+    //todo delete, only for develop to "mock" result of emit to the issuer
+    private void setSyncDidiMock(Credential credential, DidiAppUser didiUser){
+        credential.setIdDidiReceptor(didiUser.getDid());
+        setCredentialState(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode(), credential);
+        credentialRepository.save(credential);
+
+        didiUser.setSyncStatus(DidiSyncStatus.SYNC_OK.getCode());
+        didiAppUserRepository.save(didiUser);
     }
 
 }

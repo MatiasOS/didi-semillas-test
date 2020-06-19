@@ -3,6 +3,7 @@ package com.atixlabs.semillasmiddleware.app.repository;
 
 import com.atixlabs.semillasmiddleware.app.model.beneficiary.Person;
 import com.atixlabs.semillasmiddleware.app.model.credential.Credential;
+import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialCategoriesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
 import com.atixlabs.semillasmiddleware.util.DateUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -98,4 +99,37 @@ public class CredentialRepositoryCustomImpl implements CredentialRepositoryCusto
 
         return em.createQuery(criteriaQuery).getSingleResult();
     }*/
+
+
+    @Override
+    public List<Credential> findCredentialIdentitiesFromSurvey(Long dni, List<String> credentialStates, String did){
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Credential> cq = cb.createQuery(Credential.class);
+
+        Root<Credential> credential = cq.from(Credential.class);
+        List<Predicate> predicates = new ArrayList<>();
+
+        Join<Credential, CredentialState> credentialStateEntity = credential.join("credentialState", JoinType.LEFT);
+
+        predicates.add(cb.equal(credential.get("credentialCategory"), CredentialCategoriesCodes.IDENTITY.getCode()));
+
+
+        if (dni != null) {
+            predicates.add(cb.like(credential.get("creditHolderDni").as(String.class), dni.toString()));
+        }
+
+        if (credentialStates != null) {
+            predicates.add(cb.in(credentialStateEntity.get("stateName")).value(credentialStates));
+        }
+
+        if (did != null) {
+            //this has been changed the value of id didi credential for credentialDto but not changed the name because front have mapped this name
+            predicates.add(cb.or((credential.get("idDidiReceptor").isNull()),
+                             (cb.equal(credential.get("idDidiReceptor"), did))));
+        }
+
+        cq.where(predicates.toArray(new Predicate[0]));
+
+        return em.createQuery(cq).getResultList();
+    }
 }
