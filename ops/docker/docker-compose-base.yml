@@ -1,7 +1,7 @@
 version: "3"
 services:
   backend:
-    image: docker.atixlabs.com/semillas/semillas-middleware:0.0.1-SNAPSHOT-66de577e
+    image: docker.atixlabs.com/semillas/semillas-middleware:0.0.1-SNAPSHOT-98242f94
     environment:
       - spring_profiles_active=${ENVIRONMENT}
       - SEMILLAS_DB=${SEMILLAS_DB}
@@ -11,6 +11,10 @@ services:
       - BONDAREA_URL=${BONDAREA_BASE_URL}
       - BONDAREA_TOKEN=${BONDAREA_ACCESS_TOKEN}
       - BONDAREA_IDM=${BONDAREA_IDM}
+      - DIDI_URL=${DIDI_URL}
+      - DIDI_USERNAME=${DIDI_USERNAME}
+      - DIDI_PASSWORD=${DIDI_PASSWORD}
+
     depends_on:
       - db
     labels:

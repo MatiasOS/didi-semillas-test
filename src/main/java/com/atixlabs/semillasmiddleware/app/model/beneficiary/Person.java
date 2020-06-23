@@ -1,8 +1,12 @@
 package com.atixlabs.semillasmiddleware.app.model.beneficiary;
 
+import com.atixlabs.semillasmiddleware.app.bondarea.model.Loan;
 import com.atixlabs.semillasmiddleware.app.model.DIDHistoric.DIDHisotoric;
 import com.atixlabs.semillasmiddleware.excelparser.app.categories.PersonCategory;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -33,6 +37,9 @@ public class Person {
     @OneToMany
     private List<DIDHisotoric> DIDIsHisotoric;
 
+    @ManyToMany
+    protected List<Loan> defaults;
+
 
     //TODO user this
     public boolean equalsIgnoreId(Person person1, Person person2) {
@@ -52,6 +59,8 @@ public class Person {
         person.setGender(personCategory.getGender());
         return person;
     }
+
+    public boolean isInDefault(){return defaults.size()>0;}
 
 
     /*

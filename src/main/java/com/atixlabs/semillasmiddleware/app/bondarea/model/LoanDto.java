@@ -1,11 +1,12 @@
 package com.atixlabs.semillasmiddleware.app.bondarea.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -35,11 +36,11 @@ public class LoanDto implements Serializable {
 
     private String userId; // ID del solicitante del tramo (Ej. B26F5FKZ)
 
-    private Float amount; // Monto del crédito del tramo (Ej. 10000)
+    private BigDecimal amount; // Monto del crédito del tramo (Ej. 10000)
 
     private String dateFirstInstalment; // Fecha de primera cuota
 
-    private Float expiredAmount; // Saldo vencido del crédito individual, compuesto por capital, intereses, seguros y cargos (Ej. 1845.24)
+    private BigDecimal expiredAmount; // Saldo vencido del crédito individual, compuesto por capital, intereses, seguros y cargos (Ej. 1845.24)
 
     private Boolean hasCredential;
 

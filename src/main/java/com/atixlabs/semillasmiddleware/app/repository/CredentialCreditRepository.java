@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CredentialCreditRepository extends JpaRepository<CredentialCredit, Long> {
+public interface CredentialCreditRepository extends JpaRepository<CredentialCredit, Long>, CredentialCreditRepositoryCustom {
 
     Optional<CredentialCredit> findByIdBondareaCredit(String idBondarea);
 
@@ -18,7 +18,11 @@ public interface CredentialCreditRepository extends JpaRepository<CredentialCred
 
     List<CredentialCredit> findByCreditHolderDniAndCredentialStateIn(Long holderDni, List<CredentialState> credentialStates);
 
+    //Optional<CredentialCredit>findFirstByCreditHolderDniOrderByDateOfIssueDesc(Long dniHolder);
+
     List<CredentialCredit> findByCreditHolderDniAndCredentialStateInAndFinishDateIsNull(Long holderDni, List<CredentialState> credentialStates);
 
     List<CredentialCredit> findByIdGroupAndCredentialStateIn(String idGroup, List<CredentialState> credentialStates);
+
+    List<CredentialCredit> findByIdGroupInAndCreditHolderDniAndCredentialStateIn(List<String> idGroup, Long dni, List<CredentialState> credentialStates);
 }

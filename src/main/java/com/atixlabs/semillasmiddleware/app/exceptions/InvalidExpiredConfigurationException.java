@@ -4,10 +4,10 @@ import com.atixlabs.semillasmiddleware.security.model.User;
 import lombok.Getter;
 
 @Getter
-public class NoExpiredConfigurationExists extends Exception {
+public class InvalidExpiredConfigurationException extends Exception {
 
 
-  public NoExpiredConfigurationExists(String s) {
+  public InvalidExpiredConfigurationException(String s) {
     super(s);
   }
 }

@@ -45,27 +45,45 @@ public abstract class ExcelRow {
         }
     }
 
+    protected String getCellWithType(Row row, int cellIndex, String description){
+        this.saveCellData(cellIndex, description);
+        Row validRow = this.validateCellToRead(row, cellIndex);
+        if(validRow != null)
+            if (validRow.getCell(cellIndex).getCellType().equals(CellType.STRING))
+                return this.getCellStringValue(validRow, cellIndex, description);
+            else if (validRow.getCell(cellIndex).getCellType().equals(CellType.NUMERIC))
+                return this.getCellLongValue(validRow, cellIndex, description).toString();
+        return null;
+    }
+
     protected String getCellStringValue(Row row, int cellIndex, String description) {
         this.saveCellData(cellIndex, description);
-        if (row == null || row.getCell(cellIndex) == null)
-            return null;
-        this.cellIndexName = row.getCell(cellIndex).getAddress().formatAsString();
-        if (row.getCell(cellIndex).getCellType() == CellType.BLANK)
+        Row validRow = this.validateCellToRead(row, cellIndex);
+        if(validRow == null)
             return null;
         row.getCell(cellIndex).setCellType(CellType.STRING);
         return row.getCell(cellIndex).getStringCellValue();
     }
 
-    protected Long getCellLongValue(Row row, int cellindex, String descripcion) {
-        this.saveCellData(cellindex, descripcion);
-        if (row == null || row.getCell(cellindex) == null)
+    protected Long getCellLongValue(Row row, int cellIndex, String description) {
+        this.saveCellData(cellIndex, description);
+        Row validRow = this.validateCellToRead(row, cellIndex);
+        if(validRow == null)
             return null;
-        this.cellIndexName = row.getCell(cellindex).getAddress().formatAsString();
-        if (row.getCell(cellindex).getCellType() == CellType.BLANK)
-            return null;
-        return (long) row.getCell(cellindex).getNumericCellValue();
+        return (long) validRow.getCell(cellIndex).getNumericCellValue();
     }
 
+    protected Row validateCellToRead(Row row, int cellIndex){
+        if (row == null || row.getCell(cellIndex) == null)
+            return null;
+        this.cellIndexName = row.getCell(cellIndex).getAddress().formatAsString();
+        if (row.getCell(cellIndex).getCellType() == CellType.BLANK)
+            return null;
+        return row;
+    }
+
+    //this is not being used
+    /*
     Double getCellDoubleValue(Row row, int cellindex, String descripcion) {
         this.saveCellData(cellindex, descripcion);
         if (row == null || row.getCell(cellindex) == null)
@@ -101,6 +119,7 @@ public abstract class ExcelRow {
     protected Long getCellStringToLongValue(Row row, int cellindex, String descripcion) {
         return Long.parseLong(getCellStringValue(row, cellindex, descripcion));
     }
+   */
 
     private void saveCellData(int cellindex, String cellIndexDescription) {
         this.cellIndex = cellindex;

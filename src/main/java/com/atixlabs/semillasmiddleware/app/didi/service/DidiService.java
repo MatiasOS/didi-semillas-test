@@ -24,10 +24,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import retrofit2.Call;
-//import retrofit2.GsonConverterFactory;
 import retrofit2.Response;
-import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import java.util.ArrayList;
@@ -36,6 +35,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+//import retrofit2.GsonConverterFactory;
 
 @Slf4j
 @Service

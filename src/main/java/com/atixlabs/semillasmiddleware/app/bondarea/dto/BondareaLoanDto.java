@@ -1,11 +1,15 @@
 package com.atixlabs.semillasmiddleware.app.bondarea.dto;
 
+import com.atixlabs.semillasmiddleware.app.bondarea.model.LoanDto;
+import com.atixlabs.semillasmiddleware.app.bondarea.model.constants.BondareaLoanStatusCodes;
+import com.atixlabs.semillasmiddleware.app.bondarea.model.constants.LoanStatusCodes;
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -51,11 +55,36 @@ public class BondareaLoanDto {
     private Long dni; // Nro. de documento del solicitante del tramo (Ej. 99999999)
 
     @SerializedName("m")
-    private Float amount; // Monto del crédito del tramo (Ej. 10000)
+    private BigDecimal amount; // Monto del crédito del tramo (Ej. 10000)
 
     @SerializedName("fPri")
     private String dateFirstInstalment; // Fecha de primera cuota
 
     @SerializedName("sv")
-    private Float expiredAmount; // Saldo vencido del crédito individual, compuesto por capital, intereses, seguros y cargos (Ej. 1845.24)
+    private BigDecimal expiredAmount; // Saldo vencido del crédito individual, compuesto por capital, intereses, seguros y cargos (Ej. 1845.24)
+
+
+    /**
+     * for mock
+     *
+     */
+    public BondareaLoanDto(LoanDto loan){
+        this.idProductLoan = loan.getIdProductLoan();
+        this.tagBondareaLoan = loan.getTagBondareaLoan();
+        if(loan.getStatus().equals(LoanStatusCodes.ACTIVE.getCode()))
+            this.status = Integer.parseInt(BondareaLoanStatusCodes.ACTIVE.getCode());
+        else
+            if(loan.getStatus().equals(LoanStatusCodes.FINALIZED.getCode()))
+                this.status = Integer.parseInt(BondareaLoanStatusCodes.FINALIZED.getCode());
+        this.idBondareaLoan = loan.getIdBondareaLoan();
+        this.idGroup = loan.getIdGroup();
+        this.cycle = loan.getCycleDescription();
+        this.creationDate = loan.getCreationDate();
+        this.personName = loan.getPersonName();
+        this.userId = loan.getUserId();
+        this.dni = loan.getDniPerson();
+        this.amount = loan.getAmount();
+        this.dateFirstInstalment = loan.getDateFirstInstalment();
+        this.expiredAmount = loan.getExpiredAmount();
+    }
 }

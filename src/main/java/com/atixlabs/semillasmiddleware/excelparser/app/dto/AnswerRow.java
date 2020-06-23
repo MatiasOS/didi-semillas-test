@@ -51,7 +51,7 @@ public class AnswerRow extends ExcelRow {
             //14 categoria //15 pregunta //16 respuesta
             this.category = getCellStringValue(row, 14, "Categoria");
             this.question = getCellStringValue(row, 15, "Pregunta");
-            this.answer = getCellStringValue(row, 16, "Respuesta");
+            this.answer = getCellWithType(row, 16, "Respuesta");
     }
 
     public boolean isEmpty(Row row){
@@ -78,6 +78,7 @@ public class AnswerRow extends ExcelRow {
     public Long getAnswerAsLong() throws InvalidAnswerCastException {
         if (answer == null || answer.isBlank())
             return null;
+
         try {return Long.valueOf(answer);}
         catch (NumberFormatException e){
             throw new InvalidAnswerCastException(getAnswerAsString(), "valor numérico");

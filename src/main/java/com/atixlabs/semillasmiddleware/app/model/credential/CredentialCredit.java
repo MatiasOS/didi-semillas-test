@@ -9,6 +9,7 @@ import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -39,7 +40,7 @@ public class CredentialCredit extends Credential {
 
     private LocalDate finishDate;
 
-    private Float expiredAmount;
+    private BigDecimal expiredAmount;
 
     @Override
     public boolean isManuallyRevocable(){return false;}

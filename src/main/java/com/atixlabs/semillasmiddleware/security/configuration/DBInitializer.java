@@ -6,6 +6,10 @@ import com.atixlabs.semillasmiddleware.app.model.credential.constants.Credential
 import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.RevocationReason;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.constants.RevocationReasonsCodes;
+import com.atixlabs.semillasmiddleware.app.processControl.model.ProcessControl;
+import com.atixlabs.semillasmiddleware.app.processControl.model.constant.ProcessControlStatusCodes;
+import com.atixlabs.semillasmiddleware.app.processControl.model.constant.ProcessNamesCodes;
+import com.atixlabs.semillasmiddleware.app.processControl.repository.ProcessControlRepository;
 import com.atixlabs.semillasmiddleware.app.repository.CredentialStateRepository;
 import com.atixlabs.semillasmiddleware.app.repository.ParameterConfigurationRepository;
 import com.atixlabs.semillasmiddleware.app.repository.RevocationReasonRepository;
@@ -17,6 +21,7 @@ import com.atixlabs.semillasmiddleware.security.repository.MenuRepository;
 import com.atixlabs.semillasmiddleware.security.model.Menu;
 import com.atixlabs.semillasmiddleware.security.service.RoleService;
 import com.atixlabs.semillasmiddleware.security.service.UserService;
+import com.atixlabs.semillasmiddleware.util.DateUtil;
 import com.google.common.collect.Sets;
 
 import java.util.Optional;
@@ -44,8 +49,10 @@ public class DBInitializer implements CommandLineRunner {
 
     private RevocationReasonRepository revocationReasonRepository;
 
+    private ProcessControlRepository processControlRepository;
+
     @Autowired
-    public DBInitializer(UserService userService, RoleService roleService, PermissionRepository permissionRepository, MenuRepository menuRepository, CredentialStateRepository credentialStateRepository, ParameterConfigurationRepository parameterConfigurationRepository, RevocationReasonRepository revocationReasonRepository) {
+    public DBInitializer(UserService userService, RoleService roleService, PermissionRepository permissionRepository, MenuRepository menuRepository, CredentialStateRepository credentialStateRepository, ParameterConfigurationRepository parameterConfigurationRepository, RevocationReasonRepository revocationReasonRepository, ProcessControlRepository processControlRepository) {
         this.userService = userService;
         this.roleService = roleService;
         this.permissionRepository = permissionRepository;
@@ -53,6 +60,7 @@ public class DBInitializer implements CommandLineRunner {
         this.credentialStateRepository = credentialStateRepository;
         this.parameterConfigurationRepository = parameterConfigurationRepository;
         this.revocationReasonRepository = revocationReasonRepository;
+        this.processControlRepository = processControlRepository;
     }
 
     @Override
@@ -249,6 +257,29 @@ public class DBInitializer implements CommandLineRunner {
 
             RevocationReason defaultReason = new RevocationReason(RevocationReasonsCodes.DEFAULT.getCode());
             revocationReasonRepository.save(defaultReason);
+        }
+
+        if(processControlRepository.findByProcessName(ProcessNamesCodes.BONDAREA.getCode()).isEmpty()){
+            ProcessControl process = new ProcessControl();
+            process.setProcessName(ProcessNamesCodes.BONDAREA.getCode());
+            process.setStatus(ProcessControlStatusCodes.OK.getCode());
+            processControlRepository.save(process);
+        }
+        if(processControlRepository.findByProcessName(ProcessNamesCodes.CREDENTIALS.getCode()).isEmpty()){
+            ProcessControl process = new ProcessControl();
+            process.setProcessName(ProcessNamesCodes.CREDENTIALS.getCode());
+            process.setStatus(ProcessControlStatusCodes.OK.getCode());
+            //set an initial time (then will be use to compare)
+            process.setStartTime(DateUtil.getLocalDateTimeNowWithFormat("yyyy-MM-dd HH:mm:ss"));
+            processControlRepository.save(process);
+        }
+        if(processControlRepository.findByProcessName(ProcessNamesCodes.CHECK_DEFAULTERS.getCode()).isEmpty()){
+            ProcessControl process = new ProcessControl();
+            process.setProcessName(ProcessNamesCodes.CHECK_DEFAULTERS.getCode());
+            process.setStatus(ProcessControlStatusCodes.OK.getCode());
+            //set an initial time (then will be use to compare)
+            process.setStartTime(DateUtil.getLocalDateTimeNowWithFormat("yyyy-MM-dd HH:mm:ss"));
+            processControlRepository.save(process);
         }
 
     }

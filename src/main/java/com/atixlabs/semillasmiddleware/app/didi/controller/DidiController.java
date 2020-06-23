@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping(DidiController.URL_MAPPING_CREDENTIAL)
@@ -34,8 +36,12 @@ public class DidiController {
 
     @PostMapping("/didi")
     @ResponseStatus(HttpStatus.OK)
-    public String registerNewDidiAppUser(@RequestBody DidiAppUserDto didiAppUserDto){
-        return didiAppUserService.registerNewAppUser(didiAppUserDto);
+    public Map<String, String> registerNewDidiAppUser(@RequestBody DidiAppUserDto didiAppUserDto){
+        Map<String, String> jsonMessage = new HashMap<>();
+
+        String message = didiAppUserService.registerNewAppUser(didiAppUserDto);
+        jsonMessage.put("message", message);
+        return jsonMessage;
     }
 
     //ONLY FOR TESTING

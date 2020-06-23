@@ -1,7 +1,11 @@
 package com.atixlabs.semillasmiddleware.app.bondarea.model;
 
 import com.atixlabs.semillasmiddleware.app.bondarea.dto.BondareaLoanDto;
+import com.atixlabs.semillasmiddleware.app.bondarea.model.constants.BondareaLoanStatusCodes;
+import com.atixlabs.semillasmiddleware.app.bondarea.model.constants.LoanStateCodes;
+import com.atixlabs.semillasmiddleware.app.bondarea.model.constants.LoanStatusCodes;
 import com.atixlabs.semillasmiddleware.security.model.AuditableEntity;
+import com.atixlabs.semillasmiddleware.util.StringUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +13,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -41,26 +46,32 @@ public class Loan extends AuditableEntity {
 
     private String status;
 
+    private String state; //ok OR default
+
     private String idProductLoan;  //ID de producto de préstamo (Ej.  B26F5FKZ)
 
     private String idGroup; // ID del   crédito grupal y su estado (Ej.55-B26F5FKZ)
 
     private String cycleDescription; // Nombre asignado al crédito (Ej. Ciclo 2)
 
-    private LocalDate creationDate; // Fecha de otorgamiento cuentas
+    private LocalDate creationDate; // Fecha de otorgamiento cuentas FIX
 
     private String personName; // Nombre del solicitante del tramo (Ej. Perez, Juan)
 
     private String userId; // ID del solicitante del tramo (Ej. B26F5FKZ)
 
-    private Float amount; // Monto del crédito del tramo (Ej. 10000)
+    private BigDecimal amount; // Monto del crédito del tramo (Ej. 10000)
 
-    private LocalDate dateFirstInstalment; // Fecha de primera cuota
+    private LocalDate dateFirstInstalment; // Fecha de primera cuota FIX
 
-    private Float expiredAmount; // Saldo vencido del crédito individual, compuesto por capital, intereses, seguros y cargos (Ej. 1845.24)
+    @Column(scale = 2)
+    private BigDecimal expiredAmount; // Saldo vencido del crédito individual, compuesto por capital, intereses, seguros y cargos (Ej. 1845.24)
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime modifiedTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updateTime;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime synchroTime;
 
     private Boolean hasCredential;
 
@@ -73,7 +84,14 @@ public class Loan extends AuditableEntity {
 
         this.tagBondareaLoan = loanDto.getTagBondareaLoan();
 
-        //this.status =   loanDto.getStatus();
+        //Bondarea has only 2 states, FINALIZED or ACTIVE, If state is not FINALIZED SET ACTIVE COMO DEFAULT
+        if(String.valueOf(loanDto.getStatus()).equals(BondareaLoanStatusCodes.FINALIZED.getCode()))
+            this.status = LoanStatusCodes.FINALIZED.getCode();
+        else
+            this.status = LoanStatusCodes.ACTIVE.getCode();
+
+        //start in state ok
+        this.setState(LoanStateCodes.OK.getCode());
 
         this.idProductLoan =   loanDto.getIdProductLoan();
 
@@ -87,7 +105,10 @@ public class Loan extends AuditableEntity {
 
         this.amount =  loanDto.getAmount();
 
-        this.expiredAmount =   loanDto.getExpiredAmount();
+        if(loanDto.getExpiredAmount() == null)
+            this.expiredAmount = BigDecimal.ZERO;
+        else
+            this.expiredAmount =   loanDto.getExpiredAmount();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         try {
@@ -105,40 +126,43 @@ public class Loan extends AuditableEntity {
 
     }
 
+    @Override
+    public boolean equals(Object object){
+        if(object == null)
+            return false;
+
+        if(!object.getClass().equals(this.getClass()))
+            return super.equals(object);
+
+        Loan newLoan = (Loan) object;
+
+        return this.getHash().equals(newLoan.getHash());
+        //return (this.status.equals(newLoan.getStatus()) && this.cycleDescription.equals(newLoan.getCycleDescription()) && (this.expiredAmount.compareTo(newLoan.getExpiredAmount()) == 0));
+    }
+
+    public String getHash(){
+        StringBuilder hashBuilder = new StringBuilder();
+        //Fix part
+        hashBuilder.append(this.dniPerson);
+        hashBuilder.append(this.idBondareaLoan.trim());
+        hashBuilder.append(this.idProductLoan.trim());
+        hashBuilder.append(this.idGroup.trim());
+        hashBuilder.append(this.userId.trim());
+        //control change part
+        hashBuilder.append(this.status.trim());
+        hashBuilder.append(this.cycleDescription.trim());
+        hashBuilder.append(this.expiredAmount.stripTrailingZeros());
+
+        String hash =  hashBuilder.toString();
+
+        return hash !=null ? hash : "";
+    }
+
     public void merge(Loan loanToUpdate){
-
-        this.dniPerson = loanToUpdate.getDniPerson();
-
-        //this.isActive = loanToUpdate.getIsActive();
-        //this.isDeleted = loanToUpdate.getIsDeleted();
-        //this.pending = loanToUpdate.getPending();
-
-        this.idBondareaLoan = loanToUpdate.getIdBondareaLoan();
-
-        this.tagBondareaLoan = loanToUpdate.getTagBondareaLoan();
-
         this.status = loanToUpdate.getStatus();
-
-        this.idProductLoan = loanToUpdate.getIdProductLoan();
-
-        this.idGroup = loanToUpdate.getIdGroup();
-
         this.cycleDescription = loanToUpdate.getCycleDescription();
-
-        this.creationDate = loanToUpdate.getCreationDate();
-
-        this.personName = loanToUpdate.getPersonName();
-
-        this.userId = loanToUpdate.getUserId();
-
-        this.amount = loanToUpdate.getAmount();
-
-        this.dateFirstInstalment = loanToUpdate.getDateFirstInstalment();
-
         this.expiredAmount = loanToUpdate.getExpiredAmount();
-
-        this.modifiedTime = loanToUpdate.getModifiedTime();
-
+        this.personName =   loanToUpdate.getPersonName();
     }
 
     public Loan(LoanDto loanDto) {

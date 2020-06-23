@@ -1,23 +1,20 @@
 package com.atixlabs.semillasmiddleware.app.controller;
 
-import com.atixlabs.semillasmiddleware.app.bondarea.model.Loan;
 import com.atixlabs.semillasmiddleware.app.bondarea.service.LoanService;
 import com.atixlabs.semillasmiddleware.app.dto.CredentialDto;
-import com.atixlabs.semillasmiddleware.app.exceptions.NoExpiredConfigurationExists;
-import com.atixlabs.semillasmiddleware.app.exceptions.PersonDoesNotExists;
+import com.atixlabs.semillasmiddleware.app.exceptions.PersonDoesNotExistsException;
 import com.atixlabs.semillasmiddleware.app.model.credential.Credential;
-import com.atixlabs.semillasmiddleware.app.model.credential.CredentialCredit;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialStatesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialTypesCodes;
+import com.atixlabs.semillasmiddleware.app.processControl.exception.InvalidProcessException;
+import com.atixlabs.semillasmiddleware.app.processControl.model.constant.ProcessControlStatusCodes;
+import com.atixlabs.semillasmiddleware.app.processControl.model.constant.ProcessNamesCodes;
+import com.atixlabs.semillasmiddleware.app.processControl.service.ProcessControlService;
 import com.atixlabs.semillasmiddleware.app.service.CredentialService;
 import com.atixlabs.semillasmiddleware.app.didi.service.DidiService;
-import com.google.common.base.Converter;
-import com.google.common.base.Function;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,10 +36,13 @@ public class CredentialController {
 
     private LoanService loanService;
 
+    private ProcessControlService processControlService;
+
     @Autowired
-    public CredentialController(CredentialService credentialService, LoanService loanService, DidiService didiService) {
+    public CredentialController(CredentialService credentialService, LoanService loanService, ProcessControlService processControlService) {
         this.credentialService = credentialService;
         this.loanService = loanService;
+        this.processControlService = processControlService;
     }
 
 
@@ -60,7 +60,8 @@ public class CredentialController {
         try {
             credentials = credentialService.findCredentials(credentialType, name, dniBeneficiary, idDidiCredential, lastUpdate, credentialState, page);
         } catch (Exception e) {
-            log.info("There has been an error searching for credentials " + e);
+            log.info("There has been an error searching for credentials with the filters "+ credentialType + " " + name + " " + dniBeneficiary + " " + idDidiCredential + " " +
+                    credentialState.toString() + " " + e);
             return Page.empty();
         }
         return credentials.map(CredentialDto::new);
@@ -101,6 +102,7 @@ public class CredentialController {
             Optional<Credential> credentialToRevoke = credentialService.getCredentialById(idCredential);
             if (credentialToRevoke.isPresent()) {
                 if (credentialToRevoke.get().isManuallyRevocable()) {
+                    //possibilities -> Emprendimiento, Vivienda, identididad familiar, identidad titular (only the last one have a business logic, the others only revoke itself)
                     boolean revokeOk = credentialService.revokeCredential(idCredential, opRevocationReason.get());
                     if (revokeOk)
                         return ResponseEntity.status(HttpStatus.OK).body("Revoked successfully");
@@ -119,35 +121,17 @@ public class CredentialController {
 
 
     @PostMapping("/generate")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void generateCredentialsCredit() {
-
-        //update credentials
-        List<Loan> loansWithCredentials = loanService.findLoansWithCredential();
-        //if loan has been modified after the credential credit
-        for (Loan loan : loansWithCredentials) {
-            CredentialCredit creditToUpdate = credentialService.validateCredentialCreditToUpdate(loan);
-            if (creditToUpdate != null) {
-                try {
-                    credentialService.updateCredentialCredit(loan, creditToUpdate);
-                } catch (NoExpiredConfigurationExists | PersonDoesNotExists ex) {
-                    log.error(ex.getMessage());
-                } catch (Exception ex) {
-                    log.error("Error ! " + ex.getMessage());
-                }
-            }
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> generateCredentialsCredit() {
+        try {
+            credentialService.generateCredentials();
+        }
+        catch (InvalidProcessException | PersonDoesNotExistsException ex){
+            log.error("Could not get the process ! "+ ex.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        //create credentials
-        List<Loan> newLoans = loanService.findLoansWithoutCredential();
-
-        for (Loan newLoan : newLoans) {
-            try {
-                credentialService.createNewCreditCredentials(newLoan);
-            } catch (PersonDoesNotExists ex) {
-                log.error(ex.getMessage());
-            }
-        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

@@ -18,7 +18,7 @@ id, birth_date, document_number,  first_name, last_name) VALUES (
 
 INSERT INTO public.person (
 id, birth_date, document_number,  first_name, last_name) VALUES (
-'8'::bigint, '1999-05-25'::date, '24580960'::bigint, 'Rodolfo'::character varying(255), 'Rodriguez'::character varying(255));
+'8'::bigint, '1999-05-25'::date, '24580963'::bigint, 'Rodolfo'::character varying(255), 'Rodriguez'::character varying(255));
 
 INSERT INTO public.person (
 id, birth_date, document_number, first_name, last_name) VALUES (

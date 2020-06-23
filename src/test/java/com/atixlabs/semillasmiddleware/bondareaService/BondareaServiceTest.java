@@ -1,10 +1,12 @@
 package com.atixlabs.semillasmiddleware.bondareaService;
 
 
+import com.atixlabs.semillasmiddleware.app.bondarea.dto.BondareaLoanDto;
 import com.atixlabs.semillasmiddleware.app.bondarea.model.Loan;
 import com.atixlabs.semillasmiddleware.app.bondarea.model.constants.LoanStatusCodes;
 import com.atixlabs.semillasmiddleware.app.bondarea.repository.LoanRepository;
 import com.atixlabs.semillasmiddleware.app.bondarea.service.BondareaService;
+import com.atixlabs.semillasmiddleware.app.processControl.exception.InvalidProcessException;
 import com.atixlabs.semillasmiddleware.util.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
@@ -15,6 +17,9 @@ import org.mockito.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,15 +48,47 @@ public class BondareaServiceTest {
         MockitoAnnotations.initMocks(this);
     }
 
+    public BondareaLoanDto getMockBondareaLoan(){
+        BondareaLoanDto loan = new BondareaLoanDto();
+        loan.setDni(123456L);
+        loan.setIdBondareaLoan("1a");
+        //loan.setStatus(LoanStatusCodes.ACTIVE.getCode());
+        loan.setExpiredAmount(BigDecimal.valueOf(0));
+        loan.setCreationDate(DateUtil.getLocalDateTimeNow().toLocalDate().toString());
+
+        return loan;
+    }
+
     public Loan getMockLoan(){
         Loan loan = new Loan();
         loan.setDniPerson(123456L);
         loan.setIdBondareaLoan("1a");
         //loan.setStatus(LoanStatusCodes.ACTIVE.getCode());
-        loan.setExpiredAmount((float) 0);
+        loan.setExpiredAmount(BigDecimal.valueOf(0));
         loan.setCreationDate(DateUtil.getLocalDateTimeNow().toLocalDate());
 
         return loan;
+    }
+
+    private  List<BondareaLoanDto> firstBondareaLoansData(){
+        List<BondareaLoanDto> loans = new ArrayList<>();
+
+        BondareaLoanDto loan = getMockBondareaLoan();
+        loans.add(loan);
+
+        BondareaLoanDto loan2 = getMockBondareaLoan();
+        loan2.setIdBondareaLoan("2a");
+        loans.add(loan2);
+
+        BondareaLoanDto loan3 = getMockBondareaLoan();
+        loan3.setIdBondareaLoan("3a");
+        loans.add(loan3);
+
+        BondareaLoanDto loan4 = getMockBondareaLoan();
+        loan4.setIdBondareaLoan("4a");
+        loans.add(loan4);
+
+        return loans;
     }
 
     private  List<Loan> firstLoansData(){
@@ -75,49 +112,49 @@ public class BondareaServiceTest {
         return loans;
     }
 
-    private  List<Loan> secondLoansData(){
-        List<Loan> loans = new ArrayList<>();
+    private  List<BondareaLoanDto> secondLoansData(){
+        List<BondareaLoanDto> loans = new ArrayList<>();
 
         //id 1 is deleted
 
         //loan 2 is the same
-        Loan loan2 = getMockLoan();
+        BondareaLoanDto loan2 = getMockBondareaLoan();
         loan2.setIdBondareaLoan("2a");
         loans.add(loan2);
 
         //loan 3 modified tag
-        Loan loan3 = getMockLoan();
+        BondareaLoanDto loan3 = getMockBondareaLoan();
         loan3.setIdBondareaLoan("3a");
         loan3.setTagBondareaLoan("nuevo tag");
         loans.add(loan3);
 
         //loan 4 is in default
-        Loan loan4 = getMockLoan();
+        BondareaLoanDto loan4 = getMockBondareaLoan();
         loan4.setIdBondareaLoan("4a");
-        loan4.setExpiredAmount((float) 100);
+        loan4.setExpiredAmount(BigDecimal.valueOf(100));
         loans.add(loan4);
 
         //new loan
-        Loan loan5 = getMockLoan();
+        BondareaLoanDto loan5 = getMockBondareaLoan();
         loan5.setIdBondareaLoan("5a");
         loans.add(loan5);
 
         return loans;
     }
 
-    private  List<Loan> secondLoansDataAllNew(){
-        List<Loan> loans = new ArrayList<>();
+    private  List<BondareaLoanDto> secondLoansDataAllNew(){
+        List<BondareaLoanDto> loans = new ArrayList<>();
 
         //all new loans
-        Loan loan2 = getMockLoan();
+        BondareaLoanDto loan2 = getMockBondareaLoan();
         loan2.setIdBondareaLoan("5a");
         loans.add(loan2);
 
-        Loan loan3 = getMockLoan();
+        BondareaLoanDto loan3 = getMockBondareaLoan();
         loan3.setIdBondareaLoan("6a");
         loans.add(loan3);
 
-        Loan loan4 = getMockLoan();
+        BondareaLoanDto loan4 = getMockBondareaLoan();
         loan4.setIdBondareaLoan("7a");
         loans.add(loan4);
 
@@ -128,21 +165,21 @@ public class BondareaServiceTest {
     /*private  List<Loan> secondLoansDataAllExpired(){
         List<Loan> loans = new ArrayList<>();
 
-        Loan loan = getMockLoan();
+        Loan loan = getMockBondareaLoan();
         loan.setExpiredAmount((float) 100);
         loans.add(loan);
 
-        Loan loan2 = getMockLoan();
+        Loan loan2 = getMockBondareaLoan();
         loan2.setIdBondareaLoan("2a");
         loan2.setExpiredAmount((float) 100);
         loans.add(loan2);
 
-        Loan loan3 = getMockLoan();
+        Loan loan3 = getMockBondareaLoan();
         loan3.setIdBondareaLoan("3a");
         loan3.setExpiredAmount((float) 100);
         loans.add(loan3);
 
-        Loan loan4 = getMockLoan();
+        Loan loan4 = getMockBondareaLoan();
         loan4.setIdBondareaLoan("4a");
         loan4.setExpiredAmount((float) 100);
         loans.add(loan4);
@@ -153,18 +190,19 @@ public class BondareaServiceTest {
 
 
     @Test
-    public void saveNewDataOnLoan() {
+    public void saveNewDataOnLoan() throws InvalidProcessException {
         when(loanRepository.findAll()).thenReturn(Collections.emptyList());
 
-        List<Loan> loans = firstLoansData();
-        bondareaService.updateExistingLoans(loans);
+        List<BondareaLoanDto> loans = firstBondareaLoansData();
+        LocalDateTime processStart = DateUtil.getLocalDateTimeNow();
+        bondareaService.createAndUpdateLoans(loans, processStart);
 
         verify(loanRepository,times(4)).save(captor.capture());
 
         List<Loan> loansSaves = captor.getAllValues();
         Loan firstLoan = loansSaves.get(0);
 
-        Assertions.assertEquals(firstLoansData().get(0).getIdBondareaLoan(), firstLoan.getIdBondareaLoan());
+        Assertions.assertEquals(firstBondareaLoansData().get(0).getIdBondareaLoan(), firstLoan.getIdBondareaLoan());
         Assertions.assertTrue(firstLoan.getDniPerson() != null);
 
     }
@@ -174,24 +212,25 @@ public class BondareaServiceTest {
      * Mix of all the different conditions
      */
     @Test
-    public void updateAllLoans() {
+    public void updateAllLoans() throws InvalidProcessException {
         when(loanRepository.findByIdBondareaLoan("2a")).thenReturn(Optional.of(firstLoansData().get(1)));
         when(loanRepository.findByIdBondareaLoan("3a")).thenReturn(Optional.of(firstLoansData().get(2)));
         when(loanRepository.findByIdBondareaLoan("4a")).thenReturn(Optional.of(firstLoansData().get(3)));
         when(loanRepository.findByIdBondareaLoan("5a")).thenReturn(Optional.empty());
 
-        when(loanRepository.findAllByModifiedTimeNotAndModifiedTimeNotNull(any())).thenReturn(List.of(firstLoansData().get(0)));
+        when(loanRepository.updateStateBySynchroTimeLessThanAndActive(any(), LoanStatusCodes.PENDING.getCode(), LoanStatusCodes.ACTIVE.getCode())).thenReturn(0);
 
-        List<Loan> loans = secondLoansData();
-        bondareaService.updateExistingLoans(loans);
+        List<BondareaLoanDto> loans = secondLoansData();
+        LocalDateTime processStart = DateUtil.getLocalDateTimeNow();
+        bondareaService.createAndUpdateLoans(loans, processStart);
 
         verify(loanRepository,times(5)).save(captor.capture());
 
         List<Loan> loansSaves = captor.getAllValues();
 
-        Assertions.assertTrue(loansSaves.size() > firstLoansData().size());
+        Assertions.assertTrue(loansSaves.size() > firstBondareaLoansData().size());
         Assertions.assertEquals(LoanStatusCodes.PENDING.getCode(), loansSaves.get(4).getStatus());
-        Assertions.assertFalse(loansSaves.get(1).getTagBondareaLoan().equals(firstLoansData().get(2).getTagBondareaLoan()));
+        Assertions.assertFalse(loansSaves.get(1).getTagBondareaLoan().equals(firstBondareaLoansData().get(2).getTagBondareaLoan()));
 
         List<Loan> pendingLoans = loansSaves.stream().filter(loan -> loan.getStatus().equals(LoanStatusCodes.PENDING.getCode())).collect(Collectors.toList());
         Assertions.assertEquals(1, pendingLoans.size() );
@@ -199,21 +238,22 @@ public class BondareaServiceTest {
     }
 
     @Test
-    public void updateLoansOldToPending() {
+    public void updateLoansOldToPending() throws InvalidProcessException {
         when(loanRepository.findByIdBondareaLoan("5a")).thenReturn(Optional.empty());
         when(loanRepository.findByIdBondareaLoan("6a")).thenReturn(Optional.empty());
         when(loanRepository.findByIdBondareaLoan("7a")).thenReturn(Optional.empty());
 
-        when(loanRepository.findAllByModifiedTimeNotAndModifiedTimeNotNull(any())).thenReturn(firstLoansData());
+        when(loanRepository.updateStateBySynchroTimeLessThanAndActive(any(), LoanStatusCodes.PENDING.getCode(), LoanStatusCodes.ACTIVE.getCode())).thenReturn(0);
 
-        List<Loan> loans = secondLoansDataAllNew();
-        bondareaService.updateExistingLoans(loans);
+        List<BondareaLoanDto> loans = secondLoansDataAllNew();
+        LocalDateTime processStart = DateUtil.getLocalDateTimeNow();
+        bondareaService.createAndUpdateLoans(loans, processStart);
 
         verify(loanRepository,times(7)).save(captor.capture());
 
         List<Loan> loansSaves = captor.getAllValues();
 
-        Assertions.assertTrue(loansSaves.size() > firstLoansData().size());
+        Assertions.assertTrue(loansSaves.size() > firstBondareaLoansData().size());
 
         //the active loans will be all. But some are pending -> 3
         List<Loan> activeLoans = loansSaves.stream().filter(loan -> loan.getStatus().equals(LoanStatusCodes.ACTIVE.getCode())).collect(Collectors.toList());
@@ -236,10 +276,10 @@ public class BondareaServiceTest {
 
     /*@Test
     public void updateLoansAllExpired() {
-        when(loanRepository.findAll()).thenReturn(firstLoansData());
+        when(loanRepository.findAll()).thenReturn(firstBondareaLoansData());
 
         List<Loan> loans = secondLoansDataAllExpired();
-        bondareaService.updateExistingLoans(loans);
+        bondareaService.createAndUpdateLoans(loans);
 
         verify(loanRepository,times(4)).save(captor.capture());
 
