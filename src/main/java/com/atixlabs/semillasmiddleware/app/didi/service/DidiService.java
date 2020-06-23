@@ -109,7 +109,7 @@ public class DidiService {
         this.didiAppUserRepository = didiAppUserRepository;
 
         this.credentialService = credentialService;
-
+        this.credentialRepository = credentialRepository;
         this.credentialStateRepository = credentialStateRepository;
 
         this.credentialIdentityRepository = credentialIdentityRepository;
