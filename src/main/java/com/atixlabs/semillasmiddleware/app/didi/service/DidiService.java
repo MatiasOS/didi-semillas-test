@@ -217,7 +217,7 @@ public class DidiService {
                 log.info("Didi user " + didUser.getDni() + " is not new, try to synchronize only pending credentials");
             }
 
-               //sync ok or sync error
+               //here sync pending credentials
 
                 //get and emmit the pending credentials
                 credentialsBeingHolder.addAll(credentialService.getCredentialsBeingHolder(didUser.getDni(), didUser.getDid()));

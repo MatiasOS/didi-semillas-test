@@ -1340,10 +1340,10 @@ public class CredentialService {
     //in pending state
     public List<Credential> getCredentialsBeingHolder(Long didDni, String did){
         Optional<CredentialState> pendingState = credentialStateRepository.findByStateName(CredentialStatesCodes.PENDING_DIDI.getCode());
-        //get all credentials being holder (dniHolder & dniBenef equals)
+        //get all credentials being holder (it means: dniHolder and dniBenef equals)
         List<Credential> holderCredentials = credentialRepository.findByCreditHolderDniAndBeneficiaryDniAndCredentialStateIn(didDni, didDni, List.of(pendingState.get()));
 
-        //add identities to emit being the holder of them
+        //get identities to emit being the holder of them
         List<Credential> credentialIdentitiesOfHolder = this.getIdentitiesFromSurveyBeingHolder(didDni, did);
         holderCredentials.addAll(credentialIdentitiesOfHolder);
         //remove the equals (for ex. the identity Titular)
@@ -1385,8 +1385,6 @@ public class CredentialService {
         List<CredentialBenefits> benefitsFamiliar = credentialBenefitsRepository.findByCreditHolderDniNotAndBeneficiaryDniAndCredentialStateIn(didDni, didDni, List.of(pendingState.get()));
         credentialsBeingBeneficiary.addAll(benefitsFamiliar);
 
-        //get the new benefit to emit
-        credentialsBeingBeneficiary.addAll(this.checkToCreateNewBenefitsFamiliar(didDni, did));
 
         return credentialsBeingBeneficiary;
     }
@@ -1409,6 +1407,7 @@ public class CredentialService {
         if(credentialsIdentitiesBeingFamiliar.size() == 0)
             return Collections.emptyList();
 
+        //dnis holder of the related holder with this did user
         List<Long> differentHoldersDnis = credentialsIdentitiesBeingFamiliar.stream().map(CredentialIdentity::getCreditHolderDni).distinct().collect(Collectors.toList());
 
         //for each holder, filter the identities from both.
@@ -1424,7 +1423,7 @@ public class CredentialService {
                 CredentialIdentity newFamiliarIdentity = new CredentialIdentity(identityMatching.get(0));
                 newFamiliarIdentity.setIdDidiCredential(null);
                 newFamiliarIdentity.setDateOfIssue(DateUtil.getLocalDateTimeNow());
-                newFamiliarIdentity.setIdDidiReceptor(did);
+                newFamiliarIdentity.setIdDidiReceptor(did); //if sth fail, we have the did to differentiate this identity with others
                 setCredentialState(CredentialStatesCodes.PENDING_DIDI.getCode(), newFamiliarIdentity);
 
                 credentialIdentityRepository.save(newFamiliarIdentity);
@@ -1442,7 +1441,7 @@ public class CredentialService {
 
 
 
-    private List<CredentialBenefits> checkToCreateNewBenefitsFamiliar(Long didDni, String did){
+    /*private List<CredentialBenefits> checkToCreateNewBenefitsFamiliar(Long didDni, String did){
         List<CredentialState> pendingActiveState = credentialStateRepository.findByStateNameIn(List.of(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode(), CredentialStatesCodes.PENDING_DIDI.getCode()));
 
         List<CredentialBenefits> newBenefitsToEmit = new ArrayList<>();
@@ -1482,7 +1481,7 @@ public class CredentialService {
         }
 
         return newBenefitsToEmit;
-    }
+    }*/
 
     public List<Credential> getActiveCredentialsWithDid(String did){
         Optional<CredentialState> opActiveState = credentialStateRepository.findByStateName(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode());
