@@ -109,7 +109,7 @@ public class DidiService {
         this.didiAppUserRepository = didiAppUserRepository;
 
         this.credentialService = credentialService;
-        this.credentialRepository = credentialRepository;
+
         this.credentialStateRepository = credentialStateRepository;
 
         this.credentialIdentityRepository = credentialIdentityRepository;
@@ -206,11 +206,9 @@ public class DidiService {
                 //check if didUser has an old did
                 Optional<DidiAppUser> opOldDidUser = didiAppUserRepository.findTopByActiveFalseAndDniOrderByDateOfRegistrationDesc(didUser.getDni());
 
-                List<Credential> activeCredentialsWithOldDid = new ArrayList<>();
                 if(opOldDidUser.isPresent()){
                     //get all the credentials with the old didi to re-emit with the new didi
-                    Optional<CredentialState> opActiveState = credentialStateRepository.findByStateName(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode());
-                    activeCredentialsWithOldDid = credentialRepository.findByIdDidiReceptorAndCredentialState(opOldDidUser.get().getDid(), opActiveState.get());
+                    List<Credential> activeCredentialsWithOldDid = credentialService.getActiveCredentialsWithDid(didUser.getDid());
                     credentialsBeingHolder.addAll(activeCredentialsWithOldDid);
                 }
 
@@ -220,7 +218,7 @@ public class DidiService {
 
                //sync ok or sync error
 
-                //create and emmit only pending credentials
+                //get and emmit the pending credentials
                 credentialsBeingHolder.addAll(credentialService.getCredentialsBeingHolder(didUser.getDni(), didUser.getDid()));
                 credentialsBeingBeneficiary = credentialService.getCredentialsBeingBeneficiary(didUser.getDni(), didUser.getDid());
 

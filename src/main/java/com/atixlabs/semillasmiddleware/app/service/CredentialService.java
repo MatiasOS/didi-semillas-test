@@ -910,8 +910,10 @@ public class CredentialService {
 
     /////
 
+    //in pending state
     public List<Credential> getCredentialsBeingHolder(Long didDni, String did){
         Optional<CredentialState> pendingState = credentialStateRepository.findByStateName(CredentialStatesCodes.PENDING_DIDI.getCode());
+        //get all credentials being holder (dniHolder & dniBenef equals)
         List<Credential> holderCredentials = credentialRepository.findByCreditHolderDniAndBeneficiaryDniAndCredentialStateIn(didDni, didDni, List.of(pendingState.get()));
 
         //add identities to emit being the holder of them
@@ -940,6 +942,7 @@ public class CredentialService {
     }
 
 
+    //in pending state
     public List<Credential> getCredentialsBeingBeneficiary(Long didDni, String did){
         List<Credential> credentialsBeingBeneficiary = new ArrayList<>();
         Optional<CredentialState> pendingState = credentialStateRepository.findByStateName(CredentialStatesCodes.PENDING_DIDI.getCode());
@@ -1052,6 +1055,11 @@ public class CredentialService {
         }
 
         return newBenefitsToEmit;
+    }
+
+    public List<Credential> getActiveCredentialsWithDid(String did){
+        Optional<CredentialState> opActiveState = credentialStateRepository.findByStateName(CredentialStatesCodes.CREDENTIAL_ACTIVE.getCode());
+        return credentialRepository.findByIdDidiReceptorAndCredentialState(did, opActiveState.get());
     }
 
     private void setCredentialState(String credentialStateString, Credential credential) {
