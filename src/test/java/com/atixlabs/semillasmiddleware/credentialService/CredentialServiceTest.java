@@ -155,11 +155,7 @@ public class CredentialServiceTest {
         return loan;
     }
 
-<<<<<<< HEAD
     private CredentialBenefits getCredentialHolderBenefitMock(Person beneficiary){
-=======
-    private Optional<CredentialBenefits> getCredentialHolderBenefitMock(Person beneficiary) {
->>>>>>> develop
         CredentialBenefits benefits = new CredentialBenefits();
         benefits.setId(1L);
         benefits.setBeneficiaryType(PersonTypesCodes.HOLDER.getCode());
@@ -170,12 +166,7 @@ public class CredentialServiceTest {
         benefits.setBeneficiaryDni(beneficiary.getDocumentNumber());
         benefits.setIdDidiCredential("1234L");
         benefits.setIdDidiReceptor("1234L");
-
-<<<<<<< HEAD
         return  benefits;
-=======
-        return Optional.of(benefits);
->>>>>>> develop
     }
 
     private Optional<CredentialBenefits> getCredentialHolderBenefitRevokeMock(Person beneficiary) {
@@ -830,13 +821,8 @@ public class CredentialServiceTest {
         when(credentialCreditRepository.save(any(CredentialCredit.class))).thenReturn(getPendingCreditMock(getMockLoan(), getBeneficiaryMockWithoutDID()));
 
         //revoke process
-<<<<<<< HEAD
         when(credentialBenefitsRepository.findByCreditHolderDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(List.of(benefits));
         when(credentialCreditRepository.findByCreditHolderDniAndCredentialStateIn(anyLong(),anyList())).thenReturn(Collections.emptyList()); // the holder dont have another credit
-=======
-        when(credentialBenefitsRepository.findByBeneficiaryDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(Optional.of(benefits));
-        when(credentialCreditRepository.findByCreditHolderDniAndCredentialStateIn(anyLong(), anyList())).thenReturn(Collections.emptyList()); // the holder dont have another credit
->>>>>>> develop
         when(credentialRepository.findById(anyLong())).thenReturn(Optional.of(getPendingCredentialHolderBenefitMock(getBeneficiaryMockWithoutDID())));
         //todo here is returning the same object, and when the first is revoked the second too
         when(credentialBenefitsRepository.findByCreditHolderDniAndCredentialStateInAndBeneficiaryType(anyLong(), anyList(), anyString())).thenReturn(List.of(benefitFamiliar1, benefitFamiliar2));
