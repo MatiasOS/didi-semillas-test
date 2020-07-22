@@ -4,6 +4,8 @@ import com.atixlabs.semillasmiddleware.app.didi.dto.*;
 import retrofit2.Call;
 import retrofit2.http.*;
 
+import java.util.List;
+
 public interface DidiEndpoint {
 
     @POST("user/login")
@@ -16,6 +18,15 @@ public interface DidiEndpoint {
             @Field("templateId") String templateId,
             @Field("split") boolean split,
             @Field("data") DidiCredentialData didiCredentialData);
+
+    @POST("Cert/")
+    @FormUrlEncoded
+    Call<DidiCreateCredentialWithMicroCrendentialsResponse> createCertificateWithMicrocredentials(
+            @Header("token") String token,
+            @Field("templateId") String templateId,
+            @Field("split") boolean split,
+            @Field("data") DidiCredentialData didiCredentialData,
+            @Field("microCredentials") List<MicrocredentialData> microcredentialData);
 
     @POST("Cert/{credential_id}/emmit")
     Call<DidiEmmitCredentialResponse> emmitCertificate(

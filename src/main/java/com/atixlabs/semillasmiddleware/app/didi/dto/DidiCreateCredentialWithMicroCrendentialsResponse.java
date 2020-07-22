@@ -9,8 +9,10 @@ import java.util.ArrayList;
 @Getter
 @Setter
 @ToString
-public class DidiCreateCredentialResponse extends  DidiCreateCredentialCommonResponse{
+public class DidiCreateCredentialWithMicroCrendentialsResponse extends  DidiCreateCredentialCommonResponse{
 
-    private ArrayList<DidiCredential> data;
+    private DidiCredentialWithMicroCredentials data;
+
+
 
 }

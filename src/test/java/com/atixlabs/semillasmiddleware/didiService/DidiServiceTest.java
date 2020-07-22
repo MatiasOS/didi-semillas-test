@@ -2,6 +2,7 @@ package com.atixlabs.semillasmiddleware.didiService;
 
 
 import com.atixlabs.semillasmiddleware.app.didi.constant.DidiSyncStatus;
+import com.atixlabs.semillasmiddleware.app.didi.dto.CreateCertificateResult;
 import com.atixlabs.semillasmiddleware.app.didi.dto.DidiCreateCredentialResponse;
 import com.atixlabs.semillasmiddleware.app.didi.dto.DidiCredential;
 import com.atixlabs.semillasmiddleware.app.didi.dto.DidiCredentialData;
@@ -11,12 +12,14 @@ import com.atixlabs.semillasmiddleware.app.didi.service.DidiAppUserService;
 import com.atixlabs.semillasmiddleware.app.didi.service.DidiService;
 import com.atixlabs.semillasmiddleware.app.model.beneficiary.Person;
 import com.atixlabs.semillasmiddleware.app.model.credential.Credential;
+import com.atixlabs.semillasmiddleware.app.model.credential.CredentialDwelling;
 import com.atixlabs.semillasmiddleware.app.model.credential.CredentialIdentity;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialCategoriesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialStatesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
 import com.atixlabs.semillasmiddleware.app.repository.CredentialRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -24,23 +27,29 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static org.mockito.Mockito.*;
 
-//@RunWith(SpringRunner.class)
+@RunWith(SpringRunner.class)
 @SpringBootTest
 @Slf4j
 public class DidiServiceTest {
 
     @InjectMocks
     private DidiAppUserService didiAppUserService;
+
+    @Autowired
     @InjectMocks
     private DidiService didiService;
 
@@ -51,6 +60,13 @@ public class DidiServiceTest {
 
     //@Captor
     //private ArgumentCaptor<Loan> captor;
+
+    @Before
+    public void setupMocks() {
+      //  ReflectionTestUtils.setField(didiService, "didiBaseUrl", "https://test.com");
+        MockitoAnnotations.initMocks(this);
+        ReflectionTestUtils.setField(didiService, "didiBaseUrl", "https://test.com");
+    }
 
 
 
@@ -83,6 +99,7 @@ public class DidiServiceTest {
         credential.setBeneficiaryDni(creditHolder.getDocumentNumber());
         credential.setBeneficiaryFirstName(creditHolder.getFirstName());
         credential.setBeneficiaryLastName(creditHolder.getLastName());
+        credential.setBeneficiaryBirthDate( LocalDate.now());
 
         credential.setCredentialState(createCredentialStateActiveMock());
         credential.setCredentialDescription(CredentialCategoriesCodes.IDENTITY.getCode());
@@ -91,6 +108,68 @@ public class DidiServiceTest {
         ArrayList<Credential> credentials = new ArrayList<>();
         credentials.add(credential);
         return credentials;
+    }
+
+    public CredentialIdentity getCredentialIdentity(){
+        CredentialIdentity credential = new CredentialIdentity();
+        credential.setId(1L);
+        credential.setIdDidiIssuer(null);
+        credential.setIdDidiReceptor("did:ethr:0x45b5bf83cc010c18739110d8d3397f1fa8a4d20a");
+        credential.setIdDidiCredential("5f1752524acdb3002dbe48b1");
+        //credential.setIdHistorical(1L);
+        credential.setDateOfIssue(LocalDateTime.now());
+        //this.dateOfRevocation = credential.dateOfRevocation;
+
+        Person creditHolder = createCreditHolderMock();
+
+        credential.setCreditHolder(creditHolder);
+        credential.setCreditHolderDni(36637842L);
+        credential.setCreditHolderFirstName("Floren");
+        credential.setCreditHolderLastName("Toriel");
+        credential.setBeneficiaryGender("Femenino");
+        credential.setRelationWithCreditHolder("titualar");
+        credential.setBeneficiaryBirthDate(LocalDate.now());
+
+        credential.setBeneficiary(creditHolder);
+        credential.setBeneficiaryDni(36637842L);
+        credential.setBeneficiaryFirstName("Floren");
+        credential.setBeneficiaryLastName("Toriel");
+
+        credential.setCredentialState(createCredentialStateActiveMock());
+        credential.setCredentialDescription(CredentialCategoriesCodes.IDENTITY.getCode());
+        credential.setCredentialCategory(CredentialCategoriesCodes.IDENTITY.getCode());
+
+        return credential;
+    }
+
+
+    public CredentialDwelling getCredentialDwelling(){
+        CredentialDwelling credential = new CredentialDwelling();
+        credential.setId(1L);
+        credential.setIdDidiIssuer("texto-fijo-semillas");
+        credential.setIdDidiReceptor("");
+        credential.setIdDidiCredential("");
+        //credential.setIdHistorical(1L);
+        credential.setDateOfIssue(LocalDateTime.now());
+        //this.dateOfRevocation = credential.dateOfRevocation;
+
+        Person creditHolder = createCreditHolderMock();
+
+        credential.setCreditHolder(creditHolder);
+        credential.setCreditHolderDni(creditHolder.getDocumentNumber());
+        credential.setCreditHolderFirstName(creditHolder.getFirstName());
+        credential.setCreditHolderLastName(creditHolder.getLastName());
+
+        credential.setBeneficiary(creditHolder);
+        credential.setBeneficiaryDni(creditHolder.getDocumentNumber());
+        credential.setBeneficiaryFirstName(creditHolder.getFirstName());
+        credential.setBeneficiaryLastName(creditHolder.getLastName());
+
+        credential.setCredentialState(createCredentialStateActiveMock());
+        credential.setCredentialDescription(CredentialCategoriesCodes.DWELLING.getCode());
+        credential.setCredentialCategory(CredentialCategoriesCodes.DWELLING.getCode());
+
+        return credential;
     }
 
     private Person createCreditHolderMock(){
@@ -146,6 +225,20 @@ public class DidiServiceTest {
         String response = didiService.didiCredentialSync();
 
         Assertions.assertEquals(response, "La credencial fue actualizada con exito, se obtuvo el id de didi: ID-VALIDO-DIDI");
+    }
+
+    @Test
+    @Ignore
+    public void createCertificateDidiIdentityTest(){
+        Credential credential = this.getCredentialsCreditHolder().get(0);
+        CreateCertificateResult createCertificateResult = didiService.createCertificateDidi(credential);
+    }
+
+    @Test
+    @Ignore
+    public void createCertificateDidiDwellingyTest(){
+        Credential credential = this.getCredentialDwelling();
+        CreateCertificateResult createCertificateResult = didiService.createCertificateDidi(credential);
     }
 
 }

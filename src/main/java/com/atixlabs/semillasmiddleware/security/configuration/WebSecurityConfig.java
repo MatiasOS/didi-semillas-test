@@ -83,6 +83,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             ,"/action/*"//TODO delete only test
             ,"/syncdidi/*"//TODO delete only test
             ,"/diditemplate/*"//TODO delete only tes
+            ,"/credentials/*"//TODO delete only test
             // other public endpoints of your API may be appended to this array
     };
 

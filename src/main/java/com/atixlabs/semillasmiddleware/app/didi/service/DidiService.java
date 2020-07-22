@@ -66,22 +66,7 @@ public class DidiService {
     private String didiTemplateCodeDwelling;
     private String didiTemplateCodeBenefit;
     private String didiTemplateCodeCredit;
-/*
-    @Value("${didi.base_url}")
-    private String didiBaseUrl;
-    @Value("${didi.username}")
-    private String didiUsername;
-    @Value("${didi.password}")
-    private String didiPassword;
-    @Value("${didi.template_code_identity}")
-    private String didiTemplateCodeIdentity;
-    @Value("${didi.template_code_entrepreneurship}")
-    private String didiTemplateCodeEntrepreneurship;
-    @Value("${didi.template_code_dwelling}")
-    private String didiTemplateCodeDwelling;
-    @Value("${didi.template_code_benefit}")
-    private String didiTemplateCodeBenefit;
-*/
+
     @Autowired
     public DidiService(
             DidiAppUserService didiAppUserService,
@@ -155,7 +140,7 @@ public class DidiService {
         //ScalarsConverterFactory - allows String response for debug purposes.
         //GsonConverterFactory - decodes response into final target object
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(didiBaseUrl)
+                .baseUrl(didiBaseUrl!=null ? didiBaseUrl : "http://as.as")
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(okHttpClient)
@@ -287,12 +272,12 @@ public class DidiService {
 
     public void createAndEmmitCertificateDidi(Credential credential) {
 
-        DidiCreateCredentialResponse didiCreateCredentialResponse = this.createCertificateDidi(credential);
+        CreateCertificateResult createCertificateResult = this.createCertificateDidi(credential);
 
-        if (didiCreateCredentialResponse != null && didiCreateCredentialResponse.getStatus().equals("success")) {
+        if (createCertificateResult.getDidiCreateCredentialCommonResponse() != null && createCertificateResult.getDidiCreateCredentialCommonResponse().getStatus().equals("success")) {
 
-            log.info("didiSync: certificateId to emmit: "+didiCreateCredentialResponse.getData().get(0).get_id());
-            DidiEmmitCredentialResponse didiEmmitCredentialResponse = emmitCertificateDidi(didiCreateCredentialResponse.getData().get(0).get_id());
+            log.info("didiSync: certificateId to emmit: {} ",createCertificateResult.getCertificateId());
+            DidiEmmitCredentialResponse didiEmmitCredentialResponse = emmitCertificateDidi(createCertificateResult.getCertificateId());
 
             if (didiEmmitCredentialResponse!=null)
                 log.info("didiSync: emmitCertificate Response: "+didiEmmitCredentialResponse.toString());
@@ -304,7 +289,7 @@ public class DidiService {
             }
             else {
                 log.error("didiSync: Fallo la emision de la certificado, borrando el certificado creado pero no-emitido del didi-issuer");
-                this.didiDeleteCertificate(didiCreateCredentialResponse.getData().get(0).get_id());
+                this.didiDeleteCertificate(createCertificateResult.getCertificateId());
                 this.didiAppUserService.updateAppUserStatusByCode(credential.getCreditHolderDni(), DidiSyncStatus.SYNC_ERROR.getCode());
                 this.saveCredentialOnPending(credential);
             }
@@ -324,13 +309,44 @@ public class DidiService {
 
 
 
-    private DidiCreateCredentialResponse createCertificateDidi(Credential credential) {
+    public CreateCertificateResult createCertificateDidi(Credential credential) {
         log.info("didiSync: createCertificateDidi");
 
-        boolean split = false;
-
-
         CredentialCategoriesCodes credentialCategoriesCodes = CredentialCategoriesCodes.getEnumByStringValue(credential.getCredentialCategory());
+
+        switch (credentialCategoriesCodes) {
+            case IDENTITY: {
+
+                DidiCreateCredentialWithMicroCrendentialsResponse didiCreateCredentialWithMicroCrendentialsResponse =  this.createCertificateDidiIdentity(credential);
+                return new CreateCertificateResult(didiCreateCredentialWithMicroCrendentialsResponse,getCredentialId(didiCreateCredentialWithMicroCrendentialsResponse));
+            }
+            default: {
+                DidiCreateCredentialResponse didiCreateCredentialResponse =  this.createCertificateDidiDefault(credential, credentialCategoriesCodes);
+                return new CreateCertificateResult(didiCreateCredentialResponse,getCredentialId(didiCreateCredentialResponse));
+
+            }
+        }
+
+    }
+
+    private String getCredentialId(DidiCreateCredentialResponse didiCreateCredentialResponse) {
+        if (didiCreateCredentialResponse != null && didiCreateCredentialResponse.getStatus().equals("success")) {
+            return didiCreateCredentialResponse.getData().get(0).get_id();
+        }
+        return null;
+    }
+
+    private String getCredentialId(DidiCreateCredentialWithMicroCrendentialsResponse didiCreateCredentialResponse) {
+        if (didiCreateCredentialResponse != null && didiCreateCredentialResponse.getStatus().equals("success")) {
+            return didiCreateCredentialResponse.getData().get_id();
+        }
+        return null;
+    }
+
+
+    private DidiCreateCredentialResponse createCertificateDidiDefault(Credential credential, CredentialCategoriesCodes credentialCategoriesCodes ) {
+
+        boolean split = false;
 
         String didiTemplateCode = certTemplateService.getCertTemplateCode(credentialCategoriesCodes);
         String didiTemplateDescription = certTemplateService.getCertTemplateDescription(credentialCategoriesCodes);
@@ -339,14 +355,61 @@ public class DidiService {
         return createCertificateDidiCall(didiTemplateCode, didiCredentialData, split);
     }
 
+    private DidiCreateCredentialWithMicroCrendentialsResponse createCertificateDidiIdentity(Credential credential){
+        CredentialCategoriesCodes credentialCategoriesCodes = CredentialCategoriesCodes.getEnumByStringValue(credential.getCredentialCategory());
+
+        boolean split = true;
+
+        String didiTemplateCode = certTemplateService.getCertTemplateCode(credentialCategoriesCodes);
+        String didiTemplateDescription = certTemplateService.getCertTemplateDescription(credentialCategoriesCodes);
+
+        DidiCredentialData didiCredentialData = new DidiCredentialData(credential, didiTemplateDescription);
+        MicrocredentialData microcredentialData = new MicrocredentialData();
+        microcredentialData.buildDidiMicroCredentialDataForIdentity();
+        List<MicrocredentialData>  microcredentialsData = new ArrayList<MicrocredentialData>();
+        microcredentialsData.add(microcredentialData);
+        return createCertificateDidiCallWithMicrocredentials(didiTemplateCode, didiCredentialData, split, microcredentialsData);
+    }
+
     public DidiCreateCredentialResponse createCertificateDidiCall(String didiTemplateCode, DidiCredentialData didiCredentialData, boolean split) {
         log.info("didiSync: createCertificateDidiCall");
 
         Call<DidiCreateCredentialResponse> callSync = endpointInterface.createCertificate(didiAuthToken,didiTemplateCode,split,didiCredentialData);
 
         log.info(didiCredentialData.toString());
+
+        return callCreateCertificate(callSync);
+    }
+
+    public DidiCreateCredentialWithMicroCrendentialsResponse createCertificateDidiCallWithMicrocredentials(String didiTemplateCode, DidiCredentialData didiCredentialData, boolean split, List<MicrocredentialData> microcredentialsData) {
+        log.info("didiSync: createCertificateDidiCall");
+
+        Call<DidiCreateCredentialWithMicroCrendentialsResponse> callSync = endpointInterface.createCertificateWithMicrocredentials(didiAuthToken,didiTemplateCode,split,didiCredentialData, microcredentialsData);
+
+        log.info(didiCredentialData.toString());
+
+        return callCreateCertificateWithMicroCrendentials(callSync);
+    }
+
+    private DidiCreateCredentialResponse callCreateCertificate(Call<DidiCreateCredentialResponse> callSync){
+
         try {
             Response<DidiCreateCredentialResponse> response = callSync.execute();
+            log.info("didiSync: createCertificateDidiCall - response:");
+            if (response.body() != null)
+                log.info(response.body().toString());
+            return response.body();
+        } catch (Exception ex) {
+            log.error("didiSync: createCertificateDidiCall: Request error", ex);
+        }
+        return null;
+    }
+
+
+    private DidiCreateCredentialWithMicroCrendentialsResponse callCreateCertificateWithMicroCrendentials(Call<DidiCreateCredentialWithMicroCrendentialsResponse> callSync){
+
+        try {
+            Response<DidiCreateCredentialWithMicroCrendentialsResponse> response = callSync.execute();
             log.info("didiSync: createCertificateDidiCall - response:");
             if (response.body() != null)
                 log.info(response.body().toString());
