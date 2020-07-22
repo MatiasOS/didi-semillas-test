@@ -19,6 +19,7 @@ import com.atixlabs.semillasmiddleware.app.model.credential.constants.Credential
 import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
 import com.atixlabs.semillasmiddleware.app.repository.CredentialRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -232,6 +233,7 @@ public class DidiServiceTest {
     public void createCertificateDidiIdentityTest(){
         Credential credential = this.getCredentialsCreditHolder().get(0);
         CreateCertificateResult createCertificateResult = didiService.createCertificateDidi(credential);
+        Assert.assertNotNull(createCertificateResult.getCertificateId());
     }
 
     @Test
@@ -239,6 +241,7 @@ public class DidiServiceTest {
     public void createCertificateDidiDwellingyTest(){
         Credential credential = this.getCredentialDwelling();
         CreateCertificateResult createCertificateResult = didiService.createCertificateDidi(credential);
+        Assert.assertNotNull(createCertificateResult.getCertificateId());
     }
 
 }

@@ -26,16 +26,16 @@ public class MicrocredentialData {
 
     }
 
-    @Override
+    /*@Override
     public String toString() {
         return  "{" +
                 " \"title\":"+title+
                 ",\"names\":"+names+""+
 
                 "}";
-    }
+    }*/
 
-   /* @Override
+    @Override
     public String toString() {
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
@@ -51,6 +51,6 @@ public class MicrocredentialData {
         /*return "{" +
                 "title:" + title + '\'' +
                 ", names=" + names +
-                '}';
-    }*/
+                '}';*/
+    }
 }

@@ -4,6 +4,6 @@ import java.util.List;
 
 public class DidiCredentialWithMicroCredentials extends DidiCredential {
 
- //   private List<MicrocredentialData> microCredentials;
+    private List<MicrocredentialData> microCredentials;
 
 }

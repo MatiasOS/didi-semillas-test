@@ -155,6 +155,7 @@ public class DidiService {
         DidiAuthRequestBody didiAuthRequestBody = new DidiAuthRequestBody(didiUsername, didiPassword);
         Call<DidiAuthResponse> callSync = endpointInterface.getAuthToken(didiAuthRequestBody);
 
+        //TODO manejar token null en response
         try {
             Response<DidiAuthResponse> response = callSync.execute();
             DidiAuthResponse didiAuthResponse = response.body();
@@ -382,11 +383,14 @@ public class DidiService {
     }
 
     public DidiCreateCredentialWithMicroCrendentialsResponse createCertificateDidiCallWithMicrocredentials(String didiTemplateCode, DidiCredentialData didiCredentialData, boolean split, List<MicrocredentialData> microcredentialsData) {
-        log.info("didiSync: createCertificateDidiCall");
+        log.info("didiSync: createCertificateDidiCall With Microcredentials");
 
         Call<DidiCreateCredentialWithMicroCrendentialsResponse> callSync = endpointInterface.createCertificateWithMicrocredentials(didiAuthToken,didiTemplateCode,split,didiCredentialData, microcredentialsData);
 
+
         log.info(didiCredentialData.toString());
+        //TODO
+        //log.info(microcredentialsData.get(0).toString());
 
         return callCreateCertificateWithMicroCrendentials(callSync);
     }
