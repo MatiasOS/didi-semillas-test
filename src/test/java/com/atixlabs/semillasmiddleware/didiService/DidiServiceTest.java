@@ -229,6 +229,7 @@ public class DidiServiceTest {
     }
 
     @Test
+    @Ignore
     public void createCertificateDidiIdentityTest(){
         Credential credential = this.getCredentialIdentity();
         CreateCertificateResult createCertificateResult = didiService.createCertificateDidi(credential);
