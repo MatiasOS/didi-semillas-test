@@ -47,7 +47,7 @@ public class MicrocredentialData {
         }
 
 
-        return null;
+        return "[]";
         /*return "{" +
                 "title:" + title + '\'' +
                 ", names=" + names +

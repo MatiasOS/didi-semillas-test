@@ -125,8 +125,8 @@ public class DidiServiceTest {
 
         credential.setCreditHolder(creditHolder);
         credential.setCreditHolderDni(36637842L);
-        credential.setCreditHolderFirstName("Floren");
-        credential.setCreditHolderLastName("Toriel");
+        credential.setCreditHolderFirstName("Florencc");
+        credential.setCreditHolderLastName("Torielll");
         credential.setBeneficiaryGender("Femenino");
         credential.setRelationWithCreditHolder("titualar");
         credential.setBeneficiaryBirthDate(LocalDate.now());
@@ -229,9 +229,8 @@ public class DidiServiceTest {
     }
 
     @Test
-    @Ignore
     public void createCertificateDidiIdentityTest(){
-        Credential credential = this.getCredentialsCreditHolder().get(0);
+        Credential credential = this.getCredentialIdentity();
         CreateCertificateResult createCertificateResult = didiService.createCertificateDidi(credential);
         Assert.assertNotNull(createCertificateResult.getCertificateId());
     }
