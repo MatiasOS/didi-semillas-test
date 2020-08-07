@@ -158,6 +158,7 @@ public class Loan extends AuditableEntity {
         hashBuilder.append(this.idBondareaLoan.trim());
         hashBuilder.append(this.idGroup.trim());
         hashBuilder.append(this.creationDate.hashCode());
+        hashBuilder.append(this.amount);
         //control change part
         hashBuilder.append(this.status.trim());
         hashBuilder.append(this.cycleDescription.trim());
@@ -177,6 +178,9 @@ public class Loan extends AuditableEntity {
         this.currentInstalmentNumber = loanToUpdate.getCurrentInstalmentNumber();
         this.InstalmentTotalQuantity = loanToUpdate.getInstalmentTotalQuantity();
         this.InstalmentType = loanToUpdate.getInstalmentType();
+        this.idGroup = loanToUpdate.getIdGroup();
+        this.creationDate = loanToUpdate.creationDate;
+        this.amount = loanToUpdate.amount;
     }
 
    /* public Loan(LoanDto loanDto) {
