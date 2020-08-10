@@ -1,7 +1,7 @@
 version: "3"
 services:
   backend:
-    image: docker.atixlabs.com/semillas/semillas-middleware:0.0.1-SNAPSHOT-aa30e214
+    image: docker.atixlabs.com/semillas/semillas-middleware:0.0.1-SNAPSHOT-74114a6d
     environment:
       - spring_profiles_active=${ENVIRONMENT}
       - SEMILLAS_DB=${SEMILLAS_DB}
@@ -63,12 +63,12 @@ services:
       - "/db-data:/var/lib/postgresql/data"
     ports:
       - "127.0.0.1:5432:5432"
-  monitoring:
-    image: google/cadvisor:latest
-    volumes:
-      - "/:/rootfs:ro"
-      - "/var/run:/var/run:rw"
-      - "/sys:/sys:ro"
-      - "/var/lib/docker/:/var/lib/docker:ro"
-    ports:
-      - "127.0.0.1:9000:8080"
+  #monitoring:
+  #  image: google/cadvisor:latest
+  #  volumes:
+  #    - "/:/rootfs:ro"
+  #    - "/var/run:/var/run:rw"
+  #    - "/sys:/sys:ro"
+  #    - "/var/lib/docker/:/var/lib/docker:ro"
+  #  ports:
+  #    - "127.0.0.1:9000:8080"
