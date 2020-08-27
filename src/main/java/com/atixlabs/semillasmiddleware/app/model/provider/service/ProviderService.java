@@ -9,6 +9,10 @@ import com.atixlabs.semillasmiddleware.app.model.provider.model.Provider;
 import com.atixlabs.semillasmiddleware.app.model.provider.dto.ProviderCreateRequest;
 import com.atixlabs.semillasmiddleware.app.model.provider.repository.ProviderRepository;
 import com.google.common.collect.Lists;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.tool.xml.XMLWorkerHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -18,6 +22,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import javax.persistence.criteria.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -103,6 +111,4 @@ public class ProviderService{
 
         return providerRepository.save(provider);
     }
-
-
 }
