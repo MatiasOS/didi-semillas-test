@@ -7,6 +7,7 @@ import lombok.Setter;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Transient;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -40,6 +41,17 @@ public class CredentialDwelling extends Credential {
         this.dwellingType = credentialDwelling.dwellingType;
         this.dwellingAddress = credentialDwelling.dwellingAddress;
         this.possessionType = credentialDwelling.possessionType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CredentialDwelling that = (CredentialDwelling) o;
+        return Objects.equals(beneficiaryDni, that.beneficiaryDni) &&
+                Objects.equals(credentialDescription, that.credentialDescription) &&
+                Objects.equals(credentialCategory, that.credentialCategory) &&
+                Objects.equals(dwellingAddress.trim().toUpperCase(), that.dwellingAddress.trim().toUpperCase());
     }
 
 }

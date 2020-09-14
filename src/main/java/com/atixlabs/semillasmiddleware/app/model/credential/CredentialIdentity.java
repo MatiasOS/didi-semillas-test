@@ -19,13 +19,13 @@ public class CredentialIdentity extends Credential {
     private String beneficiaryGender;
     private LocalDate beneficiaryBirthDate;
 
-public CredentialIdentity(CredentialIdentity credentialIdentity){
-    super(credentialIdentity);
+    public CredentialIdentity(CredentialIdentity credentialIdentity){
+        super(credentialIdentity);
 
-    this.relationWithCreditHolder = credentialIdentity.relationWithCreditHolder;
-    this.beneficiaryGender = credentialIdentity.beneficiaryGender;
-    this.beneficiaryBirthDate = credentialIdentity.beneficiaryBirthDate;
+        this.relationWithCreditHolder = credentialIdentity.relationWithCreditHolder;
+        this.beneficiaryGender = credentialIdentity.beneficiaryGender;
+        this.beneficiaryBirthDate = credentialIdentity.beneficiaryBirthDate;
 
-}
+    }
 
 }

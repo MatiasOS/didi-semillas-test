@@ -12,6 +12,7 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @NoArgsConstructor
 @Getter
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 @Inheritance( strategy = InheritanceType.JOINED )
 @ToString
 public class Credential extends AuditableEntity {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -119,5 +121,14 @@ public class Credential extends AuditableEntity {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Credential that = (Credential) o;
+        return Objects.equals(beneficiaryDni, that.beneficiaryDni) &&
+                Objects.equals(credentialDescription, that.credentialDescription) &&
+                Objects.equals(credentialCategory, that.credentialCategory);
+    }
 
 }

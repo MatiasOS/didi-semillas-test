@@ -8,6 +8,7 @@ import lombok.Setter;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -41,4 +42,14 @@ public class CredentialEntrepreneurship extends Credential {
         this.endActivity = credentialEntrepreneurship.endActivity;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CredentialEntrepreneurship that = (CredentialEntrepreneurship) o;
+        return Objects.equals(beneficiaryDni, that.beneficiaryDni) &&
+                Objects.equals(credentialDescription, that.credentialDescription) &&
+                Objects.equals(credentialCategory, that.credentialCategory) &&
+                Objects.equals(entrepreneurshipName.trim().toUpperCase(), that.entrepreneurshipName.trim().toUpperCase());
+    }
 }
