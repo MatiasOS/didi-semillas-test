@@ -71,6 +71,7 @@ public class DidiCredentialData {
         cert.add(new DidiCredentialDataElem("Fecha de Nacimiento", credential.getBeneficiaryBirthDate().toString()));
     }
 
+    //todo: validate fields or toString will throw nullpointer
     private void buildDidiCredentialDataFromDwelling(CredentialDwelling credential){
         cert.add(new DidiCredentialDataElem("Tipo de Tenencia", credential.getPossessionType()));
         cert.add(new DidiCredentialDataElem("Tipo de Vivienda", credential.getDwellingType()));

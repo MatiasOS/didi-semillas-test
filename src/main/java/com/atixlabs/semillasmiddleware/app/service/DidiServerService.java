@@ -39,9 +39,9 @@ public class DidiServerService {
 
         try {
             Response<DidiUpdateIdentityResponse> response = callSync.execute();
-            log.info("Didi update identity response: "+response.body().toString());
+            log.info("Didi update identity response: "+response.body());
             if (HttpStatus.valueOf(response.raw().code()).is4xxClientError()){
-                log.error("Impossible to update identity credential on didi, message: "+response.body().toString());
+                log.error("Impossible to update identity credential on didi, message: "+response.body());
                 throw new RuntimeException("Could not update credential on didi");
             }
 
