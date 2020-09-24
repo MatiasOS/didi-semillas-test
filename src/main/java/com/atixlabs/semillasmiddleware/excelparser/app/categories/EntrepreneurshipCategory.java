@@ -203,6 +203,8 @@ public class EntrepreneurshipCategory implements Category {
                 return Optional.of(this.seniority);
             case OUTPATIENT:
                 return Optional.of(this.outpatient);
+            case FAIR:
+                return Optional.of(this.fair);
             case STORE_OR_HOME:
                 return Optional.of(this.storeOrHome);
             case DAYS_PER_WEEK:
@@ -373,6 +375,27 @@ public class EntrepreneurshipCategory implements Category {
     }
 
     @Override
+    public String getHtmlFromTemplate(String rowTemplate, String subCategoryTemplate, String subcategoryParam, String questionParam, String answerParam) {
+        String html="";
+
+        List<AnswerDto> answerDtos = this.getAnswersList();
+
+        for (AnswerDto answer : answerDtos) {
+
+            if (answer.getQuestion() != null) {// && answer.getAnswer() != null) {
+                String ans = String.valueOf(Optional.ofNullable(answer.getAnswer()).orElse(""));
+                if (ans.equals("SUBCATEGORY")) {
+                    html += subCategoryTemplate
+                            .replace(subcategoryParam, answer.getQuestion().getQuestionName());
+                } else html += rowTemplate
+                        .replace(questionParam, answer.getQuestion().getQuestionName())
+                        .replace(answerParam, ans);
+            }
+        }
+        return html;
+    }
+
+    @Override
     public List<AnswerDto> getAnswersList(){
         return Arrays.asList(
                 entrepreneurshipData, type, name, address, phone, mainActivity, activityStartDate, reset, seniority,
@@ -382,7 +405,7 @@ public class EntrepreneurshipCategory implements Category {
                 entryPerWeek, entryWeek1, entryWeek2, entryWeek3, entryWeek4, totalMonthlyEntry,
                 entries, entryPerMonth,
                 exits, exitRent, exitWater, exitElectricity, exitShopping, exitPhone, exitTaxes, exitTransport, exitMaintenance, exitEmployees, exitOthers, totalExit,
-                entriesExitsRelationship, totalEntry, totalExit, entriesExitsRelationship, entryExitRelationshipFortnight,
+                entriesExitsRelationship, totalEntry, totalExit, entryExitRelationship, entryExitRelationshipFortnight,
                 projection, facebook, photo
         );
     }

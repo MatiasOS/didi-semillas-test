@@ -74,8 +74,11 @@ public class PdfParserService {
     private void fillStack(Stack<Category> categoriesStack, List<Categories> categories, SurveyForm surveyForm){
         Collections.reverse(categories);
         categories.forEach( cat -> {
-            Optional.ofNullable(surveyForm.getCategoryByUniqueName(cat.getCode(), null))
-                .ifPresent(categoriesStack::push);
+            for(int i = cat.getAmount(); i >= 1; i--) {
+                String name = cat.getAmount() > 1 ? String.format("%s %d", cat.getCode(), i) : cat.getCode();
+                Optional.ofNullable(surveyForm.getCategoryByUniqueName(name, null))
+                        .ifPresent(categoriesStack::push);
+            }
         });
 
     }

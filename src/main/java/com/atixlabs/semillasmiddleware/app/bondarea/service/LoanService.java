@@ -49,8 +49,7 @@ public class LoanService {
 
     public List<Loan> findLastLoansModifiedInDefault(LocalDateTime credentialProcessLastTime) {
         //get the modified credits: the credits that modified in the last sync and (if exits) the credits that had been modified before that last sync.
-        List<Loan> defaultCredits = loanRepository.findAllByUpdateTimeGreaterThanAndStatusAndState(credentialProcessLastTime, LoanStatusCodes.ACTIVE.getCode(), LoanStateCodes.DEFAULT.getCode());
-        return defaultCredits;
+        return loanRepository.findAllByUpdateTimeGreaterThanAndStatusAndState(credentialProcessLastTime, LoanStatusCodes.ACTIVE.getCode(), LoanStateCodes.DEFAULT.getCode());
     }
 
     public List<Loan> findLastLoansModifiedActive(LocalDateTime credentialProcessLastTime) {
@@ -75,6 +74,10 @@ public class LoanService {
         //get the modified credits: the credits that modified in the last sync and (if exits) the credits that had been modified before that last sync.
         List<Loan> finalizedCredits = loanRepository.findAllByUpdateTimeGreaterThanAndStatusAndState(credentialProcessLastTime, LoanStatusCodes.CANCELLED.getCode(), LoanStateCodes.OK.getCode());
         return finalizedCredits;
+    }
+
+    public List<Loan> findOthersLoansActivesForHolder(Loan loan){
+        return loanRepository.findAllByDniPersonAndStatusAndIdBondareaLoanNot(loan.getDniPerson(), LoanStatusCodes.ACTIVE.getCode(),loan.getIdBondareaLoan());
     }
 
 }

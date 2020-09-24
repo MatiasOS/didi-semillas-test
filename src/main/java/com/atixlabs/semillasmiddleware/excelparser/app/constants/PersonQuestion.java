@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 public enum PersonQuestion implements CategoryQuestion {
     // Headers
     FIRST_LAST_NAME("NOMBRE Y APELLIDO"),
-    INSTITUTION_LEVEL("NIVEL DE INSTITUCION"),
+    INSTITUTION_LEVEL("NIVEL DE INSTRUCCION"),
     ADDRESS_DATA_1("DATOS DOMICILIO 1"),
     PHONE_DATA("DATOS TELEFONO"),
     REFERENCE_CONTACT("CONTACTO DE REFERENCIA"),
@@ -38,7 +38,6 @@ public enum PersonQuestion implements CategoryQuestion {
         public boolean isRequired() {
             return true;
         }
-
         @Override
         public Class<?> getDataType() {
             return Long.class;
@@ -67,10 +66,15 @@ public enum PersonQuestion implements CategoryQuestion {
     WORKS("TRABAJA"),
     AGE("EDAD"){
         @Override
+        public boolean isRequired() {
+            return true;
+        }
+        @Override
         public Class<?> getDataType() {
             return Long.class;
         }
     },
+    CHILDREN_QUANTITY("CANTIDAD DE HIJOS"),
     RESIDENCE_TIME_IN_COUNTRY("TIEMPO DE RESIDENCIA EN EL PAIS"),
     FACEBOOK("FACEBOOK"),
     ADDRESS("DIRECCION"),
@@ -78,6 +82,7 @@ public enum PersonQuestion implements CategoryQuestion {
     NEIGHBORHOOD("BARRIO"),
     ZONE("PARTIDO"),
     LOCALITY("LOCALIDAD"),
+    ADDRESS_2("DATOS DOMICILIO 2"),
     REFERENCE_CONTACT_NAME("NOMBRE DE CONTACTO"),
     REFERENCE_CONTACT_SURNAME("APELLIDO DE CONTACTO"),
     REFERENCE_CONTACT_PHONE("TELEFONO"),
@@ -86,6 +91,8 @@ public enum PersonQuestion implements CategoryQuestion {
     HIGH_SCHOOL("SECUNDARIA"),
     TERTIARY("TERCIARIO"),
     UNIVERSITY("UNIVERSITARIO"),
+    OTHERS("OTRO"),
+    LAST_STUDY_YEAR("ULTIMO ANO DE ESTUDIOS"),
     WORKSHOPS("TALLERES"),
     COURSES("CURSOS"),
     LAND_LINE("TELEFONO FIJO"),

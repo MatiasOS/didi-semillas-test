@@ -53,6 +53,7 @@ public class AnswerRow extends ExcelRow {
             this.category = getCellStringValue(row, 14, "Categoria");
             this.question = getCellStringValue(row, 15, "Pregunta");
             this.answer = getCellWithType(row, 16, "Respuesta");
+            if(this.answer != null) answer = answer.trim();
     }
 
     public boolean isEmpty(Row row){

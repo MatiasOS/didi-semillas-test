@@ -27,16 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @Service
 public class CredentialBenefitService extends CredentialBenefitCommonService<CredentialBenefits> {
-
-    //private PersonService personService;
-
-   // private CredentialStateService credentialStateService;
 
     private CredentialBenefitsRepository credentialBenefitsRepository;
 
@@ -207,6 +204,58 @@ public class CredentialBenefitService extends CredentialBenefitCommonService<Cre
         Optional<CredentialBenefits> opCredentialBenefitsHolder = credentialBenefitsRepository.findTopByCreditHolderDniAndBeneficiaryDniAndBeneficiaryTypeOrderByIdDesc(holderDni, beneficiaryDni, personTypesCodes.getCode());
         return opCredentialBenefitsHolder;
     }
+
+    /**
+     * ACTIVO
+     * Titular (id didi titular)
+     *  Si es el unico credito activo para el titular
+     *      Revoco beneficios asociados al titular y familiares, si estan vigentes o pendientes de didi
+     *  Si no es el unico credito activo
+     *      No hago nada,
+     * Familiar (Id Didi familiar)
+     *  Si es el unico credito activo para el titular
+     *      *      Revoco beneficios asociados al titular y familiares, si estan vigentes o pendientes de didi
+     *      *  Si no es el unico credito activo
+     *      *      No hago nada,
+     *     *
+     *DEFAULT
+     *  Titular
+     *      Si es el unico credito activo para el titular
+     *      No hago nada, se supone que todas las credenciales estan revocadas
+     *      Si Tiene mas creditos
+     *          Marco los demas creditos para revision en el próximo proceso y que verifique segun su estado lo que deben hacer conlas credenciales
+     *  Familiar
+     *      Si es familiar de algun otro titular que tenga creditos activos,
+     *          Marco los demas creditos para revision en el próximo proceso y que verifique segun su estado lo que deben hacer conlas credenciales
+     *      Si es el unico titularno hago nada
+     * @param loanFinalized
+     */
+    public List<Loan> handleLoanFinalized(Loan loanFinalized,  List<Loan> otherLoansActiveForHolder) throws CredentialException {
+
+        if(!loanFinalized.isDefault()) {
+            if (otherLoansActiveForHolder == null || otherLoansActiveForHolder.isEmpty()) { //active loan is the only
+                Optional<Person> holder = this.personService.findByDocumentNumber(loanFinalized.getDniPerson());
+                if (holder.isPresent()) {
+                    log.info("Loan {} is the only credit for holder {}, revoking credentials", loanFinalized.getIdBondareaLoan(), loanFinalized.getDniPerson());
+                    this.revokeHolderCredentialsBenefitsForLoan(holder.get());
+                    this.revokeFamilyCredentialsBenefitsForLoan(holder.get());
+                } else
+                    log.error("holder {} not exist, cant revoke credentials", loanFinalized.getDniPerson());
+
+            } else {
+                log.info("Loan {} is not the only of holder {}, not evaluate credentials states", loanFinalized.getIdBondareaLoan(), loanFinalized.getDniPerson());
+            }
+        }else{
+                if(otherLoansActiveForHolder!=null || !otherLoansActiveForHolder.isEmpty()) {
+                    return otherLoansActiveForHolder;
+                }
+
+        }
+        return new ArrayList<Loan>();
+
+    }
+
+
 
 
     @Override

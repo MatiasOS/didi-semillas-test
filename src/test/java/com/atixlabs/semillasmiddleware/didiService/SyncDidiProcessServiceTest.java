@@ -172,7 +172,7 @@ public class SyncDidiProcessServiceTest {
 
         DidiAppUser didiAppUser = this.getDidiAppUserMock();
 
-        when(didiAppUserService.getDidiAppUserByDni(credentialBenefits.getBeneficiaryDni())).thenReturn(Optional.of(didiAppUser));
+        when(didiAppUserService.getDidiAppUserByDni(credentialBenefits.getCreditHolderDni())).thenReturn(Optional.of(didiAppUser));
         when(credentialBenefitService.save(credentialBenefits)).thenReturn(credentialBenefits);
 
         syncDidiProcessService.emmitCredentialBenefit(credentialBenefits);
@@ -220,7 +220,7 @@ public class SyncDidiProcessServiceTest {
 
         DidiAppUser didiAppUser = this.getDidiAppUserMock();
 
-        when(didiAppUserService.getDidiAppUserByDni(credentialIdentity.getBeneficiaryDni())).thenReturn(Optional.of(didiAppUser));
+        when(didiAppUserService.getDidiAppUserByDni(credentialIdentity.getCreditHolderDni())).thenReturn(Optional.of(didiAppUser));
         when(credentialIdentityService.save(credentialIdentity)).thenReturn(credentialIdentity);
 
         syncDidiProcessService.emmitCredentialIdentity(credentialIdentity);
@@ -270,7 +270,7 @@ public class SyncDidiProcessServiceTest {
 
         DidiAppUser didiAppUser = this.getDidiAppUserMock();
 
-        when(didiAppUserService.getDidiAppUserByDni(credentialDwelling.getBeneficiaryDni())).thenReturn(Optional.of(didiAppUser));
+        when(didiAppUserService.getDidiAppUserByDni(credentialDwelling.getCreditHolderDni())).thenReturn(Optional.of(didiAppUser));
         when(credentialDwellingService.save(credentialDwelling)).thenReturn(credentialDwelling);
 
         syncDidiProcessService.emmitCredentialDwelling(credentialDwelling);
@@ -318,7 +318,7 @@ public class SyncDidiProcessServiceTest {
 
         DidiAppUser didiAppUser = this.getDidiAppUserMock();
 
-        when(didiAppUserService.getDidiAppUserByDni(credentialEntrepreneurship.getBeneficiaryDni())).thenReturn(Optional.of(didiAppUser));
+        when(didiAppUserService.getDidiAppUserByDni(credentialEntrepreneurship.getCreditHolderDni())).thenReturn(Optional.of(didiAppUser));
         when(credentialEntrepreneurshipService.save(credentialEntrepreneurship)).thenReturn(credentialEntrepreneurship);
 
         syncDidiProcessService.emmitCredentialEntrepreneurship(credentialEntrepreneurship);
@@ -378,7 +378,7 @@ public class SyncDidiProcessServiceTest {
         SancorPolicy sancorPolicy = this.getSancorPolicyMock();
 
 
-        when(didiAppUserService.getDidiAppUserByDni(credentialBenefitSancor.getBeneficiaryDni())).thenReturn(Optional.of(didiAppUser));
+        when(didiAppUserService.getDidiAppUserByDni(credentialBenefitSancor.getCreditHolderDni())).thenReturn(Optional.of(didiAppUser));
         when(sancorPolicyService.findByCertificateClientDni(credentialBenefitSancor.getBeneficiaryDni())).thenReturn(Optional.of(sancorPolicy));
         when(credentialBenefitSancorService.save(credentialBenefitSancor)).thenReturn(credentialBenefitSancor);
 
@@ -394,7 +394,7 @@ public class SyncDidiProcessServiceTest {
 
         DidiAppUser didiAppUser = this.getDidiAppUserMock();
 
-        when(credentialIdentityService.getCredentialIdentityActiveForDni(didiAppUser.getDni())).thenReturn(Optional.empty());
+        when(credentialIdentityService.getAllCredentialIdentityActivesForDni(didiAppUser.getDni())).thenReturn(new ArrayList<>());
 
         syncDidiProcessService.verifyCredentialIdentityForDidiAppUser(didiAppUser);
 
@@ -414,8 +414,11 @@ public class SyncDidiProcessServiceTest {
         DidiAppUser didiAppUser = this.getDidiAppUserMock();
         credentialIdentityNew.setIdDidiReceptor(didiAppUser.getDid());
 
+        ArrayList<CredentialIdentity> list = new ArrayList<CredentialIdentity>();
+        list.add(credentialIdentity);
+
         //when(creden)
-        when(credentialIdentityService.getCredentialIdentityActiveForDni(didiAppUser.getDni())).thenReturn(Optional.of(credentialIdentity));
+        when(credentialIdentityService.getAllCredentialIdentityActivesForDni(didiAppUser.getDni())).thenReturn(list);
         when(credentialIdentityService.buildNewOnPendidgDidi(credentialIdentity, didiAppUser)).thenReturn(credentialIdentityNew);
         when(credentialIdentityService.save(any(CredentialIdentity.class))).thenAnswer(new Answer<CredentialIdentity>() {
             @Override
@@ -450,8 +453,11 @@ public class SyncDidiProcessServiceTest {
 
         credentialIdentityNew.setIdDidiReceptor(didiAppUser.getDid());
 
+        ArrayList<CredentialIdentity> list = new ArrayList<CredentialIdentity>();
+        list.add(credentialIdentity);
+
         //when(creden)
-        when(credentialIdentityService.getCredentialIdentityActiveForDni(didiAppUser.getDni())).thenReturn(Optional.of(credentialIdentity));
+        when(credentialIdentityService.getAllCredentialIdentityActivesForDni(didiAppUser.getDni())).thenReturn(list);
 
         syncDidiProcessService.verifyCredentialIdentityForDidiAppUser(didiAppUser);
 

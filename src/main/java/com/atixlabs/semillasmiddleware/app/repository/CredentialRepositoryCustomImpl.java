@@ -30,7 +30,7 @@ public class CredentialRepositoryCustomImpl implements CredentialRepositoryCusto
     protected EntityManager em;
 
     @Override
-    public Page<Credential> findCredentialsWithFilter(String credentialType, String name, String dniBeneficiary, String dniHolder, String idDidiCredential, String lastUpdate, List<String> credentialStates,  Pageable page) {
+    public Page<Credential> findCredentialsWithFilter(String credentialType, String name, String surname, String dniBeneficiary, String dniHolder, String idDidiCredential, String lastUpdate, List<String> credentialStates,  Pageable page) {
 
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Credential> cq = cb.createQuery(Credential.class);
@@ -46,11 +46,11 @@ public class CredentialRepositoryCustomImpl implements CredentialRepositoryCusto
         }
 
         if(name != null) {
-            predicates.add(cb.or((cb.like(cb.lower(beneficiary.get("firstName")), "%" + name.toLowerCase() + "%")),
-                    (cb.like(cb.lower(beneficiary.get("lastName")), "%" + name.toLowerCase() + "%"))));
+            predicates.add(cb.like(cb.lower(beneficiary.get("firstName")), "%" + name.toLowerCase() + "%"));
         }
-
-
+        if(surname != null) {
+            predicates.add(cb.like(cb.lower(beneficiary.get("lastName")), "%" + surname.toLowerCase() + "%"));
+        }
         if (dniBeneficiary != null) {
             predicates.add(cb.like(credential.get("beneficiaryDni").as(String.class), dniBeneficiary+"%"));
         }

@@ -1,5 +1,6 @@
 package com.atixlabs.semillasmiddleware.app.service;
 
+import com.atixlabs.semillasmiddleware.app.bondarea.model.Loan;
 import com.atixlabs.semillasmiddleware.app.didi.model.DidiAppUser;
 import com.atixlabs.semillasmiddleware.app.didi.service.DidiService;
 import com.atixlabs.semillasmiddleware.app.exceptions.CredentialException;
@@ -7,7 +8,6 @@ import com.atixlabs.semillasmiddleware.app.model.beneficiary.Person;
 import com.atixlabs.semillasmiddleware.app.model.configuration.ParameterConfiguration;
 import com.atixlabs.semillasmiddleware.app.model.configuration.constants.ConfigurationCodes;
 import com.atixlabs.semillasmiddleware.app.model.credential.CredentialBenefitSancor;
-import com.atixlabs.semillasmiddleware.app.model.credential.CredentialEntrepreneurship;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialCategoriesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialTypesCodes;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState;
@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -121,8 +122,39 @@ public class CredentialBenefitSancorService extends CredentialBenefitCommonServi
         return newCredentialBenefitSancor;
     }
 
+    /**
+     * Si el credito esta activo
+     * Sancor
+     *
+     *     Si es el unico credito, revoco la credencial
+     *     si tiene mas creditos no hago nada
+     *sie sta en mora
+     * Sancor
+     *
+     *     Si es el unico credito, revoco la credencial si es necesario
+     *     Si tiene mas creditos no hago nada
+     * @param loanFinalized
+     * @param otherLoansActiveForHolder
+     * @return
+     * @throws CredentialException
+     */
+    public List<Loan> handleLoanFinalized(Loan loanFinalized, List<Loan> otherLoansActiveForHolder) throws CredentialException {
 
-    @Override
+        if (otherLoansActiveForHolder == null || otherLoansActiveForHolder.isEmpty()) {
+            Optional<Person> holder = this.personService.findByDocumentNumber(loanFinalized.getDniPerson());
+            if(holder.isPresent()){
+                log.info("Revoking Holder {} Sancor credentials");
+                this.revokeHolderCredentialsBenefitsForLoan(holder.get());
+            }
+        }else{
+            log.info("Holder {} has more credits actives, not revoke Sancor credential");
+        }
+
+        return new ArrayList<Loan>();
+    }
+
+
+        @Override
     public CredentialBenefitSancor saveCredentialBenefit(CredentialBenefitSancor credential) {
         credential = credentialBenefitSancorRepository.save(credential);
         if (credential.getIdHistorical() == null) {

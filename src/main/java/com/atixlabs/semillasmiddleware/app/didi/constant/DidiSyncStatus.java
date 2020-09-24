@@ -7,7 +7,8 @@ import java.util.stream.Collectors;
 public enum DidiSyncStatus {
     SYNC_MISSING("sync-missing"),
     SYNC_OK("sync-ok"),
-    SYNC_ERROR("sync-error");
+    SYNC_ERROR("sync-error"),
+    SYNC_NEW("sync-new");
 
     private String code;
     DidiSyncStatus(String code) {this.code = code;}

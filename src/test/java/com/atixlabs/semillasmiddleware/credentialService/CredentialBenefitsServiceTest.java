@@ -22,6 +22,7 @@ import com.atixlabs.semillasmiddleware.app.service.CredentialStateService;
 import com.atixlabs.semillasmiddleware.app.service.PersonService;
 import com.atixlabs.semillasmiddleware.util.DateUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -719,6 +720,65 @@ public class CredentialBenefitsServiceTest {
         Assertions.assertEquals(StateRevoke.get(), credentialBenefitsSaved.getCredentialState());
 
 
+    }
+
+    @Test
+    public void whenFinalizeLoanAndIsTheOnlyActiveForHolder_thenRevokeCredentialsBenefits() throws CredentialException {
+
+        Loan loan = this.getMockLoan();
+        Optional<Person> opHolder = this.getPersonMockWithDid();
+
+        when(personService.findByDocumentNumber(anyLong())).thenReturn(opHolder);
+
+        CredentialBenefitService credentialBenefitServiceSpy = Mockito.spy(this.credentialBenefitsService);
+        credentialBenefitServiceSpy.handleLoanFinalized(loan,null);
+
+        verify(credentialBenefitServiceSpy, times(1)).revokeHolderCredentialsBenefitsForLoan(opHolder.get());
+        verify(credentialBenefitServiceSpy, times(1)).revokeFamilyCredentialsBenefitsForLoan(opHolder.get());
+
+    }
+
+    @Test
+    public void whenFinalizeLoanAndIsNotTheOnlyActiveForHolder_thenDonothing() throws CredentialException {
+
+        Loan loan = this.getMockLoan();
+        Optional<Person> opHolder = this.getPersonMockWithDid();
+
+        loan.setState(LoanStateCodes.DEFAULT.getCode());
+
+        List<Loan> otherLoans = new ArrayList<Loan>();
+        otherLoans.add(this.getMockLoan());
+
+        when(personService.findByDocumentNumber(anyLong())).thenReturn(opHolder);
+
+        CredentialBenefitService credentialBenefitServiceSpy = Mockito.spy(this.credentialBenefitsService);
+        List<Loan> result = credentialBenefitServiceSpy.handleLoanFinalized(loan,otherLoans);
+
+        verify(credentialBenefitServiceSpy, times(0)).revokeHolderCredentialsBenefitsForLoan(opHolder.get());
+        verify(credentialBenefitServiceSpy, times(0)).revokeFamilyCredentialsBenefitsForLoan(opHolder.get());
+
+        Assert.assertEquals(otherLoans,result);
+    }
+
+    @Test
+    public void whenFinalizeLoanAndIsNotTheOnlyActiveForHolderAndIsOnDefault_thenReturnLoansToVerify() throws CredentialException {
+
+        Loan loan = this.getMockLoan();
+        Optional<Person> opHolder = this.getPersonMockWithDid();
+
+
+        List<Loan> otherLoans = new ArrayList<Loan>();
+        otherLoans.add(this.getMockLoan());
+
+        when(personService.findByDocumentNumber(anyLong())).thenReturn(opHolder);
+
+        CredentialBenefitService credentialBenefitServiceSpy = Mockito.spy(this.credentialBenefitsService);
+        List<Loan> result = credentialBenefitServiceSpy.handleLoanFinalized(loan,otherLoans);
+
+        verify(credentialBenefitServiceSpy, times(0)).revokeHolderCredentialsBenefitsForLoan(opHolder.get());
+        verify(credentialBenefitServiceSpy, times(0)).revokeFamilyCredentialsBenefitsForLoan(opHolder.get());
+
+        Assert.assertTrue(result.isEmpty());
     }
 
     private Optional<ParameterConfiguration> getParameterConfigurationDidiIssuerMock(){

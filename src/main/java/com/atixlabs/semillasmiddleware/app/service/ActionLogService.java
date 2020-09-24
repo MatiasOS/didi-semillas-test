@@ -52,7 +52,7 @@ public class ActionLogService {
                     }),
                     actionFilterDto.getMessage().map(value -> {
                         String message = "%" + value + "%";
-                        return cb.like(cb.upper(root.get("message")), message);
+                        return cb.like(cb.upper(root.get("message")), message.toUpperCase());
                     }),
                     actionFilterDto.getDateFrom().map(value -> cb.greaterThanOrEqualTo(root.get("executionDateTime"), value)),
                     actionFilterDto.getDateTo().map(value ->cb.lessThanOrEqualTo(root.get("executionDateTime"), value))

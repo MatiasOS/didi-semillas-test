@@ -5,6 +5,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public enum DidiSyncStatus implements CategoryQuestion {
+    //Header
+    DESCRIPTION("DESCRIPCION DE MATERIALES"),
+    DWELLING_CONDITION("CONDICIONES DE VIVIENDA"),
+
     BRICK("LADRILLO"),
     LOCK("CHAPA"),
     WOOD("MADERA"),
@@ -15,7 +19,6 @@ public enum DidiSyncStatus implements CategoryQuestion {
             return true;
         }
     },
-    DWELLING_CONDITION("CONDICIONES DE VIVIENDA"),
     HOLDING_TYPE("TIPO DE TENENCIA"){
         @Override
         public boolean isRequired() {

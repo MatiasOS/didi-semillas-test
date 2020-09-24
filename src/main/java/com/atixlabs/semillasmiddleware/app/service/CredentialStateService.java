@@ -48,4 +48,12 @@ public class CredentialStateService {
         return opStateActive.get();
     }
 
+    public CredentialState getCredentialState(String code){
+        Optional<CredentialState> opStateActive = credentialStateRepository.findByStateName(code);
+        if (!opStateActive.isPresent()) {
+            throw new CredentialException(String.format("Cant't obtain Credential State (code:%s)", code));
+        }
+        return opStateActive.get();
+    }
+
 }

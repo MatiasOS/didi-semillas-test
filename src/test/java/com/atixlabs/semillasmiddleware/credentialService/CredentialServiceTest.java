@@ -22,6 +22,7 @@ import com.atixlabs.semillasmiddleware.app.model.credentialState.CredentialState
 import com.atixlabs.semillasmiddleware.app.model.credentialState.RevocationReason;
 import com.atixlabs.semillasmiddleware.app.model.credentialState.constants.RevocationReasonsCodes;
 import com.atixlabs.semillasmiddleware.app.repository.*;
+import com.atixlabs.semillasmiddleware.app.service.CredentialIdentityService;
 import com.atixlabs.semillasmiddleware.app.service.CredentialService;
 import com.atixlabs.semillasmiddleware.app.service.CredentialStateService;
 import com.atixlabs.semillasmiddleware.app.service.PersonService;
@@ -79,7 +80,7 @@ public class CredentialServiceTest {
     private CredentialStateRepository credentialStateRepository;
 
     @Mock
-    private CredentialIdentityRepository credentialIdentityRepository;
+    private CredentialIdentityService credentialIdentityService;
 
     @Mock
     private CredentialDwellingRepository credentialDwellingRepository;
@@ -567,7 +568,7 @@ public class CredentialServiceTest {
     }*/
 
     @Test
-    public void buildAllCredentialsFromFormOK() throws InvalidRowException {
+    public void buildAllCredentialsFromFormOK() throws InvalidRowException, CredentialException {
         log.info("buildAllCredentialsFromFormOK");
         ProcessExcelFileResult processExcelFileResult = new ProcessExcelFileResult();
         SurveyForm surveyForm = createSurveyFormMock(createAnswerRowListMock(), processExcelFileResult);

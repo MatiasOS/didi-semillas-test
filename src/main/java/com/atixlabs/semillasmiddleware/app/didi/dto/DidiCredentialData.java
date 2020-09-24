@@ -4,8 +4,10 @@ import com.atixlabs.semillasmiddleware.app.model.credential.*;
 import com.atixlabs.semillasmiddleware.app.model.credential.constants.CredentialCategoriesCodes;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.formula.functions.T;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Slf4j
 @Getter
@@ -79,14 +81,13 @@ public class DidiCredentialData {
         cert.add(new DidiCredentialDataElem("Instalacion de luz", credential.getLightInstallation()));
         cert.add(new DidiCredentialDataElem("Condiciones grales", credential.getGeneralConditions()));
         cert.add(new DidiCredentialDataElem("Tipo de barrio", credential.getNeighborhoodType()));
-        cert.add(new DidiCredentialDataElem("Red de gas", credential.getGas().toString()));
-        cert.add(new DidiCredentialDataElem("Garrafa", credential.getCarafe().toString()));
-        cert.add(new DidiCredentialDataElem("Red de agua", credential.getWater().toString()));
-        cert.add(new DidiCredentialDataElem("Pozo/Bomba", credential.getWatterWell().toString()));
-
-        cert.add(new DidiCredentialDataElem("Localidad", ""));
-        cert.add(new DidiCredentialDataElem("Barrio", ""));
-        cert.add(new DidiCredentialDataElem("Direccion", ""));
+        Optional.ofNullable(credential.getGas()).ifPresent(gas -> cert.add(new DidiCredentialDataElem("Red de gas", gas.toString())));
+        Optional.ofNullable(credential.getCarafe()).ifPresent(carafe -> cert.add(new DidiCredentialDataElem("Garrafa", carafe.toString())));
+        Optional.ofNullable(credential.getWater()).ifPresent(water -> cert.add(new DidiCredentialDataElem("Red de agua", water.toString())));
+        Optional.ofNullable(credential.getWatterWell()).ifPresent(waterWell -> cert.add(new DidiCredentialDataElem("Pozo/Bomba", waterWell.toString())));
+        cert.add(new DidiCredentialDataElem("Localidad", credential.getLocation()));
+        cert.add(new DidiCredentialDataElem("Barrio", credential.getNeighborhood()));
+        cert.add(new DidiCredentialDataElem("Direccion", credential.getAddress()));
 
     }
 

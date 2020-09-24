@@ -16,5 +16,6 @@ public class ProviderDto implements Serializable {
     private String phone;
     private String speciality;
     private String description;
+    private Boolean active;
     private ProviderCategoryDto providerCategoryDto;
 }

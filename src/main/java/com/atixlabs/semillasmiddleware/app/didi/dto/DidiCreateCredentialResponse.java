@@ -11,9 +11,11 @@ import java.util.ArrayList;
 @ToString
 public class DidiCreateCredentialResponse {
     private String status;
-    private ArrayList<DidiCredential> data;
+    //private ArrayList<DidiCredential> data;
 
-    private String errorCode;//when error
+    private Object data;
+
+    private String code;//when error
     private String message;//when error
 
 }

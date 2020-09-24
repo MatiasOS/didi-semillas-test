@@ -63,6 +63,7 @@ public class CredentialController {
     public Page<CredentialDto> findCredentials(@RequestParam @DefaultValue("0") Integer page,
                                           @RequestParam(required = false) String credentialType,
                                           @RequestParam(required = false) String name,
+                                          @RequestParam(required = false) String surname,
                                           @RequestParam(required = false) String dniBeneficiary,
                                           @RequestParam(required = false) String creditHolderDni,
                                           @RequestParam(required = false) String idDidiCredential,
@@ -71,8 +72,8 @@ public class CredentialController {
 
         Page<CredentialDto> credentials;
         try {
-            log.info("find credentials "+credentialType+" "+name+dniBeneficiary+" "+idDidiCredential+" "+lastUpdate+" "+credentialState.get(0));
-            credentials = credentialService.findCredentials(credentialType, name, dniBeneficiary, creditHolderDni, idDidiCredential, lastUpdate, credentialState, page);
+            log.info("find credentials "+credentialType+" "+name+" "+surname+" "+dniBeneficiary+" "+idDidiCredential+" "+lastUpdate+" "+credentialState.get(0));
+            credentials = credentialService.findCredentials(credentialType, name, surname, dniBeneficiary, creditHolderDni, idDidiCredential, lastUpdate, credentialState, page);
         } catch (Exception e) {
             log.info("There has been an error searching for credentials with the filters "+ credentialType + " " + name + " " + dniBeneficiary + " " + idDidiCredential + " " +
                     credentialState.toString() + " " + e);

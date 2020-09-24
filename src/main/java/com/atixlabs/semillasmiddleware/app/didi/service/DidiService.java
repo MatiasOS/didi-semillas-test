@@ -16,6 +16,7 @@ import com.atixlabs.semillasmiddleware.app.repository.*;
 import com.atixlabs.semillasmiddleware.app.service.CertTemplateService;
 import com.atixlabs.semillasmiddleware.app.service.CredentialService;
 import com.atixlabs.semillasmiddleware.enpoint.DidiEndpoint;
+import com.google.gson.internal.LinkedTreeMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -256,26 +257,20 @@ public class DidiService {
         DidiCreateCredentialResponse didiCreateCredentialResponse = this.createCertificateDidi(credential);
 
         if (didiCreateCredentialResponse != null && didiCreateCredentialResponse.getStatus().equals("success")) {
+            String id = (String) ((LinkedTreeMap) ((ArrayList) didiCreateCredentialResponse.getData()).get(0)).get("_id");
 
-            log.info("didiSync: certificateId to emmit: "+didiCreateCredentialResponse.getData().get(0).get_id());
-            DidiEmmitCredentialResponse didiEmmitCredentialResponse = emmitCertificateDidi(didiCreateCredentialResponse.getData().get(0).get_id());
+            log.info("didiSync: certificateId to emmit: "+ id);
+            DidiEmmitCredentialResponse didiEmmitCredentialResponse = emmitCertificateDidi(id);
 
             if (didiEmmitCredentialResponse!=null)
                 log.info("didiSync: emmitCertificate Response: "+didiEmmitCredentialResponse.toString());
 
-            if (didiEmmitCredentialResponse!=null && didiEmmitCredentialResponse.getStatus().equals("success")){
-                log.info("didiSync: La credencial fue emitida, persistiendo datos en bd");
-                this.saveEmittedCredential(didiEmmitCredentialResponse, credential);
-                this.didiAppUserService.updateAppUserStatusByCode(credential.getCreditHolderDni(), DidiSyncStatus.SYNC_OK.getCode());
-            }
-            else {
-                log.error("didiSync: Fallo la emision de la certificado, borrando el certificado creado pero no-emitido del didi-issuer");
-                this.didiDeleteCertificate(didiCreateCredentialResponse.getData().get(0).get_id());
-                this.didiAppUserService.updateAppUserStatusByCode(credential.getCreditHolderDni(), DidiSyncStatus.SYNC_ERROR.getCode());
-                this.saveCredentialOnPending(credential);
-            }
+            log.info("didiSync: La credencial fue emitida, persistiendo datos en bd");
+            this.saveEmittedCredential(didiEmmitCredentialResponse, credential);
+            this.didiAppUserService.updateAppUserStatusByCode(credential.getCreditHolderDni(), DidiSyncStatus.SYNC_OK.getCode());
+
         } else {
-            log.error("didiSync: fallo la creacion de la certificado");
+            log.error("didiSync: fallo la creacion de la certificado, ["+(didiCreateCredentialResponse != null ? didiCreateCredentialResponse.getData() : "Error no manejado") +"]");
             this.didiAppUserService.updateAppUserStatusByCode(credential.getCreditHolderDni(), DidiSyncStatus.SYNC_ERROR.getCode());
             this.saveCredentialOnPending(credential);
         }

@@ -6,6 +6,7 @@ import com.atixlabs.semillasmiddleware.excelparser.app.dto.AnswerDto;
 import com.atixlabs.semillasmiddleware.excelparser.app.dto.AnswerRow;
 import com.atixlabs.semillasmiddleware.excelparser.dto.ProcessExcelFileResult;
 import com.atixlabs.semillasmiddleware.util.StringUtil;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -18,6 +19,7 @@ public class DwellingCategory implements Category {
     String categoryOriginalName;
     private Categories categoryName = Categories.DWELLING_CATEGORY_NAME;
 
+    AnswerDto description;
     AnswerDto brick; //ladrillo
     AnswerDto lock; //chapa
     AnswerDto wood; //madera
@@ -39,6 +41,7 @@ public class DwellingCategory implements Category {
     AnswerDto rental; //monto alquiler
 
     public DwellingCategory(String categoryUniqueName, Categories category){
+        this.description = new AnswerDto(DidiSyncStatus.DESCRIPTION);
         this.brick= new AnswerDto(DidiSyncStatus.BRICK);
         this.lock= new AnswerDto(DidiSyncStatus.LOCK);
         this.wood= new AnswerDto(DidiSyncStatus.WOOD);
@@ -68,12 +71,18 @@ public class DwellingCategory implements Category {
         DidiSyncStatus questionMatch = DidiSyncStatus.getEnumByStringValue(question);
         if(questionMatch==null)
             return;
-        Optional<AnswerDto> optionalAnswer = getAnswerType(questionMatch);
+        Optional<AnswerDto> optionalAnswer = getAnswerType(questionMatch, answerRow);
         optionalAnswer.ifPresent(param -> param.setAnswer(answerRow, processExcelFileResult));
     }
 
-    public Optional<AnswerDto> getAnswerType(DidiSyncStatus questionMatch) {
+    public Optional<AnswerDto> getAnswerType(DidiSyncStatus questionMatch, AnswerRow answerRow) {
         switch (questionMatch) {
+            case DESCRIPTION:
+                answerRow.setAnswer("SUBCATEGORY");
+                return Optional.of(this.description);
+            case DWELLING_CONDITION:
+                answerRow.setAnswer("SUBCATEGORY");
+                return Optional.of(this.dwellingCondition);
             case BRICK:
                 return Optional.of(this.brick);
             case LOCK:
@@ -84,8 +93,6 @@ public class DwellingCategory implements Category {
                 return Optional.of(this.paperBoard);
             case DISTRICT:
                 return Optional.of(this.district);
-            case DWELLING_CONDITION:
-                return Optional.of(this.dwellingCondition);
             case HOLDING_TYPE:
                 return Optional.of(this.holdingType);
             case DWELLING_TYPE:
@@ -244,7 +251,7 @@ public class DwellingCategory implements Category {
 
     @Override
     public List<AnswerDto> getAnswersList(){
-        return Arrays.asList( brick,  lock,  wood,  paperBoard,  district,  dwellingCondition,  holdingType,
+        return Arrays.asList( description, brick,  lock,  wood,  paperBoard,  district,  dwellingCondition,  holdingType,
                 dwellingType,  lightInstallation,  generalConditions,  neighborhoodType,  basicServicies,  gas,
                 carafe,  water,  watterWell,  antiquity,  numberOfEnvironments,  rental);
     }

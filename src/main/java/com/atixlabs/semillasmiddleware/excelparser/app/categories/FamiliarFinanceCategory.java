@@ -108,6 +108,8 @@ public class FamiliarFinanceCategory implements Category {
                 return Optional.of(this.monthlyExits);
             case ENTRY_ENTREPRENEURSHIP:
                 return Optional.of(this.entryEntrepreneurship);
+            case ENTRY_APPLICANT:
+                return Optional.of(this.entryApplicant);
             case ENTRY_FAMILY:
                 return Optional.of(this.entryFamily);
             case TOTAL_MONTHLY_ENTRY:

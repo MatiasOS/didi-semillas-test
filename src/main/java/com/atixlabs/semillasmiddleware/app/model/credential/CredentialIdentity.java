@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import java.time.LocalDate;
 
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,6 +24,15 @@ public class CredentialIdentity extends Credential {
         super(credentialIdentity);
 
         this.relationWithCreditHolder = credentialIdentity.relationWithCreditHolder;
+        this.beneficiaryGender = credentialIdentity.beneficiaryGender;
+        this.beneficiaryBirthDate = credentialIdentity.beneficiaryBirthDate;
+
+    }
+
+    public CredentialIdentity(CredentialIdentity credentialIdentity, String relationWithCreditHolder){
+        super(credentialIdentity);
+
+        this.relationWithCreditHolder = relationWithCreditHolder;
         this.beneficiaryGender = credentialIdentity.beneficiaryGender;
         this.beneficiaryBirthDate = credentialIdentity.beneficiaryBirthDate;
 

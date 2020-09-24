@@ -179,43 +179,10 @@ public class Loan extends AuditableEntity {
         this.InstalmentType = loanToUpdate.getInstalmentType();
     }
 
-   /* public Loan(LoanDto loanDto) {
-        this.dniPerson = loanDto.getDniPerson();
 
-        this.idBondareaLoan = loanDto.getIdBondareaLoan();
-
-        this.tagBondareaLoan = loanDto.getTagBondareaLoan();
-
-        this.status =   loanDto.getStatus();
-
-        this.idProductLoan =   loanDto.getIdProductLoan();
-
-        this.idGroup =   loanDto.getIdGroup();
-
-        this.cycleDescription =   loanDto.getCycleDescription();
-
-        this.personName =   loanDto.getPersonName();
-
-        this.userId =   loanDto.getUserId();
-
-        this.amount =  loanDto.getAmount();
-
-        this.expiredAmount =   loanDto.getExpiredAmount();
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        try {
-            if (loanDto.getDateFirstInstalment() != null) {
-                this.dateFirstInstalment = LocalDate.parse(loanDto.getDateFirstInstalment(), formatter);
-            }
-
-            if (loanDto.getCreationDate() != null) {
-                this.creationDate = LocalDate.parse(loanDto.getCreationDate(), formatter);
-            }
-        }
-        catch (Exception ex){
-            log.error("Error trying to format BondareaLoanDto to Loan, using format dd/MM/yyyy. The format coming is " + loanDto.getCreationDate());
-        }
-    }*/
+    public boolean isDefault(){
+        return (this.state!=null ? this.state.equals(LoanStateCodes.DEFAULT.getCode()) : false);
+    }
 
     public Loan() {}
 }

@@ -55,7 +55,8 @@ public class ActionLogAspect {
 
             DidiAppUserOperationResult didiAppUserOperationResult = (DidiAppUserOperationResult)returnValue;
 
-            if(didiAppUserOperationResult.equals(DidiAppUserOperationResult.NEW_USER_REGISTER_OK)) {
+            if(didiAppUserOperationResult.equals(DidiAppUserOperationResult.NEW_USER_REGISTER_OK) ||
+                    didiAppUserOperationResult.equals(DidiAppUserOperationResult.NEW_DID_REGISTERED_FOR_USER) ) {
 
                 String message = String.format("Se registró el id Didi %s para el dni %d", didiAppUserDto.getDid(), didiAppUserDto.getDni());
                 this.saveActionLog(ActionTypeEnum.DIDI_CREDENTIAL_REQUEST, ActionLevelEnum.INFO, message);

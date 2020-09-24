@@ -222,6 +222,11 @@ private CertTemplateRepository certTemplateRepository;
             credentialStateRepository.save(new CredentialState(CredentialStatesCodes.PENDING_DIDI.getCode()));
         }
 
+       Optional<CredentialState> credentialStateDefault = credentialStateRepository.findByStateName(CredentialStatesCodes.DEFAULT_DIDI.getCode());
+       if (credentialStateDefault.isEmpty()) {
+           credentialStateRepository.save(new CredentialState(CredentialStatesCodes.DEFAULT_DIDI.getCode()));
+       }
+
         if(!parameterConfigurationRepository.findByConfigurationName(ConfigurationCodes.MAX_EXPIRED_AMOUNT.getCode()).isPresent()){
             ParameterConfiguration configuration = new ParameterConfiguration();
             configuration.setValue("500");

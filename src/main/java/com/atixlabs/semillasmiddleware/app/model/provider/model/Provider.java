@@ -69,6 +69,7 @@ public class Provider extends AuditableEntity {
                 .phone(this.phone)
                 .speciality(this.speciality)
                 .whatsappNumber(this.whatsappNumber)
+                .active(this.active)
                 .providerCategoryDto(ProviderCategoryDto.builder()
                         .id(this.providerCategory.getId())
                         .name(this.providerCategory.getName())
