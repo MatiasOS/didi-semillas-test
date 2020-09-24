@@ -431,7 +431,7 @@ public class SyncDidiProcessServiceTest {
         CredentialIdentity credentialIdentityResult = credentialIdentityArgumentCaptor.getValue();
 
         verify(credentialIdentityService, times(1)).revokeComplete(credentialIdentity, RevocationReasonsCodes.UPDATE_INTERNAL);
-        Assert.assertNotEquals(credentialIdentity, credentialIdentityResult);
+        Assert.assertEquals(credentialIdentity, credentialIdentityResult);
         Assert.assertEquals(didiAppUser.getDid(), credentialIdentityResult.getIdDidiReceptor());
 
     }
@@ -508,7 +508,7 @@ public void whenVerifyCrendentialCreditForNewDidiAppUserAndNotIsActive_thenDoNot
         CredentialCredit credentialCreditResult = credentialCreditArgumentCaptor.getValue();
 
         verify(credentialCreditService, times(1)).revokeComplete(credential, RevocationReasonsCodes.UPDATE_INTERNAL);
-        Assert.assertNotEquals(credential, credentialCreditResult);
+        Assert.assertEquals(credential, credentialCreditResult);
         Assert.assertEquals(didiAppUser.getDid(),credentialCreditResult.getIdDidiReceptor());
 
     }
@@ -584,7 +584,7 @@ public void whenVerifyCrendentialCreditForNewDidiAppUserAndNotIsActive_thenDoNot
         CredentialBenefits credentialBenefitsResult = credentialBenefitsArgumentCaptor.getValue();
 
         verify(credentialBenefitService, times(1)).revokeComplete(credential, RevocationReasonsCodes.UPDATE_INTERNAL);
-        Assert.assertNotEquals(credential, credentialBenefitsResult);
+        Assert.assertEquals(credential, credentialBenefitsResult);
         Assert.assertEquals(didiAppUser.getDid(),credentialBenefitsResult.getIdDidiReceptor());
 
     }
@@ -661,7 +661,7 @@ public void whenVerifyCrendentialCreditForNewDidiAppUserAndNotIsActive_thenDoNot
         CredentialDwelling credentialDwellingResult = credentialDwellingArgumentCaptor.getValue();
 
         verify(credentialDwellingService, times(1)).revokeComplete(credential, RevocationReasonsCodes.UPDATE_INTERNAL);
-        Assert.assertNotEquals(credential, credentialDwellingResult);
+        Assert.assertEquals(credential, credentialDwellingResult);
         Assert.assertEquals(didiAppUser.getDid(),credentialDwellingResult.getIdDidiReceptor());
 
     }
@@ -737,7 +737,7 @@ public void whenVerifyCrendentialCreditForNewDidiAppUserAndNotIsActive_thenDoNot
         CredentialEntrepreneurship credentialEntrepreneurshipResult = credentialEntrepreneurshipArgumentCaptor.getValue();
 
         verify(credentialEntrepreneurshipService, times(1)).revokeComplete(credential, RevocationReasonsCodes.UPDATE_INTERNAL);
-        Assert.assertNotEquals(credential, credentialEntrepreneurshipResult);
+        Assert.assertEquals(credential, credentialEntrepreneurshipResult);
         Assert.assertEquals(didiAppUser.getDid(),credentialEntrepreneurshipResult.getIdDidiReceptor());
 
     }
@@ -812,7 +812,7 @@ public void whenVerifyCrendentialCreditForNewDidiAppUserAndNotIsActive_thenDoNot
         CredentialBenefitSancor credentialBenefitSancorResult = credentialBenefitSancorArgumentCaptor.getValue();
 
         verify(credentialBenefitSancorService, times(1)).revokeComplete(credential, RevocationReasonsCodes.UPDATE_INTERNAL);
-        Assert.assertNotEquals(credential, credentialBenefitSancorResult);
+        Assert.assertEquals(credential, credentialBenefitSancorResult);
         Assert.assertEquals(didiAppUser.getDid(),credentialBenefitSancorResult.getIdDidiReceptor());
 
     }
