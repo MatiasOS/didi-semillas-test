@@ -24,6 +24,8 @@ public class CredentialCredit extends Credential {
 
     private String idBondareaCredit;
 
+    //private BigDecimal creditAmmount; TO VALIDATE
+
     private LocalDate creationDate;
 
     private String creditType; //TODO  Credito semilla / escolar / estacional / individual / de motos/de min. desarrolo social
@@ -60,6 +62,7 @@ public class CredentialCredit extends Credential {
         this.finishDate = credentialCredit.finishDate;
         this.expiredAmount = credentialCredit.expiredAmount;
         this.currentCycleNumber = credentialCredit.currentCycleNumber;
+        //this.creditAmmount = credentialCredit.creditAmmount; TO VALIDATE
     }
 
 }

@@ -2,10 +2,10 @@ package com.atixlabs.semillasmiddleware.app.bondarea.model.constants;
 
 public enum LoanStatusCodes {
 
-    ACTIVE("Active"), //this constant is used in LoanRepository for query!
-    FINALIZED("Finalized"),
-    PENDING("Pending"),
-    CANCELLED("Cancelled");
+    ACTIVE("Al dia"), //this constant is used in LoanRepository for query!
+    FINALIZED("Finalizado"),
+    PENDING("Pendiente"),
+    CANCELLED("Cancelado");
 
 
     private String code;

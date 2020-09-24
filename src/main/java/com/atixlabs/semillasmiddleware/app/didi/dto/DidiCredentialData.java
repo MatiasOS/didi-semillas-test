@@ -116,12 +116,12 @@ public class DidiCredentialData {
         cert.add(new DidiCredentialDataElem("Id Credito", credential.getIdBondareaCredit()));
         cert.add(new DidiCredentialDataElem("Tipo de Credito", credential.getCreditType()));
         cert.add(new DidiCredentialDataElem("Id Grupo", credential.getIdGroup()));
-        cert.add(new DidiCredentialDataElem("Ciclo", credential.getCurrentCycle()));
+        cert.add(new DidiCredentialDataElem("Ciclo del Credito", credential.getCurrentCycle()));
         cert.add(new DidiCredentialDataElem("Estado de Credito", credential.getCreditState()));
         cert.add(new DidiCredentialDataElem("Saldo Vencido", credential.getExpiredAmount().toString()));
-        cert.add(new DidiCredentialDataElem("Cuota", credential.getCurrentCycleNumber().toString()));
+        cert.add(new DidiCredentialDataElem("Cuota Actual", credential.getCurrentCycleNumber().toString()));
         cert.add(new DidiCredentialDataElem("Cuotas Totales", String.valueOf(credential.getTotalCycles())));
-     //   cert.add(new DidiCredentialDataElem("Cuotas Vencidas", String.valueOf(credential.getAmountExpiredCycles())));
+        cert.add(new DidiCredentialDataElem("Fecha de inicio", String.valueOf(credential.getCreationDate())));
     }
 
 }
