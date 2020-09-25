@@ -14,5 +14,14 @@ public class DidiDeleteCredentialBody {
                 this.reason = "OTHER";
         }
     }
-
+    public static String getReasonCode(String reason) {
+        switch (reason) {
+            case "Expiracion de datos":
+                return "EXPIRATION";
+            case "Desvinculacion":
+                return "UNLINKING";
+            default:
+                return "OTHER";
+        }
+    }
 }

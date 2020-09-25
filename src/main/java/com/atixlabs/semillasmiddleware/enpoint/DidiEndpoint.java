@@ -30,7 +30,7 @@ public interface DidiEndpoint {
     Call<DidiEmmitCredentialResponse> deleteCertificate(
             @Header("token") String token,
             @Path("credential_id") String credential_id,
-            @Body DidiDeleteCredentialBody body);
+            @Body String reason);
 
 
     @GET("Cert/all")
