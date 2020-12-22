@@ -32,6 +32,7 @@ public class DwellingCategory implements Category {
     AnswerDto generalConditions; //condiciones generales
     AnswerDto neighborhoodType; //tipo de barrio
     AnswerDto basicServicies; //servicios basicos
+    AnswerDto isModification; //es modificacion
     AnswerDto gas; //red de gas
     AnswerDto carafe; //garrafa
     AnswerDto water; //red de agua
@@ -54,6 +55,7 @@ public class DwellingCategory implements Category {
         this.generalConditions= new AnswerDto(DidiSyncStatus.GENERAL_CONDITIONS);
         this.neighborhoodType= new AnswerDto(DidiSyncStatus.NEIGHBORHOOD_TYPE);
         this.basicServicies= new AnswerDto(DidiSyncStatus.BASIC_SERVICES);
+        this.isModification = new AnswerDto(DidiSyncStatus.IS_MODIFICATION);
         this.gas= new AnswerDto(DidiSyncStatus.GAS);
         this.carafe= new AnswerDto(DidiSyncStatus.CARAFE);
         this.water= new AnswerDto(DidiSyncStatus.WATER);
@@ -105,6 +107,8 @@ public class DwellingCategory implements Category {
                 return Optional.of(this.neighborhoodType);
             case BASIC_SERVICES:
                 return Optional.of(this.basicServicies);
+            case IS_MODIFICATION:
+                return Optional.of(this.isModification);
             case GAS:
                 return Optional.of(this.gas);
             case CARAFE:
@@ -148,6 +152,7 @@ public class DwellingCategory implements Category {
         answers.add(this.generalConditions);
         answers.add(this.neighborhoodType);
         answers.add(this.basicServicies);
+        answers.add(this.isModification);
         answers.add(this.gas);
         answers.add(this.carafe);
         answers.add(this.water);
@@ -155,7 +160,6 @@ public class DwellingCategory implements Category {
         answers.add(this.antiquity);
         answers.add(this.numberOfEnvironments);
         answers.add(this.rental);
-
 
         List<Boolean> validations = answers.stream().map(answerDto -> answerDto.isValid(processExcelFileResult, categoryOriginalName)).collect(Collectors.toList());
         return validations.stream().allMatch(v->v);
@@ -168,6 +172,7 @@ public class DwellingCategory implements Category {
                 && holdingType.answerIsEmpty() && dwellingType.answerIsEmpty()
                 && lightInstallation.answerIsEmpty() && generalConditions.answerIsEmpty()
                 && neighborhoodType.answerIsEmpty() && basicServicies.answerIsEmpty()
+                && isModification.answerIsEmpty()
                 && gas.answerIsEmpty() && carafe.answerIsEmpty() && water.answerIsEmpty()
                 && watterWell.answerIsEmpty() && antiquity.answerIsEmpty()
                 && numberOfEnvironments.answerIsEmpty() && rental.answerIsEmpty();
@@ -234,6 +239,8 @@ public class DwellingCategory implements Category {
         return getBooleanFromAnswer(this.watterWell);
     }
 
+    public Boolean isModification() { return getBooleanFromAnswer(this.isModification); }
+
     public Integer getAntiquity() {
         if(this.antiquity.getAnswer() == null) return null;
         return ((Long) this.antiquity.getAnswer()).intValue();
@@ -252,7 +259,7 @@ public class DwellingCategory implements Category {
     @Override
     public List<AnswerDto> getAnswersList(){
         return Arrays.asList( description, brick,  lock,  wood,  paperBoard,  district,  dwellingCondition,  holdingType,
-                dwellingType,  lightInstallation,  generalConditions,  neighborhoodType,  basicServicies,  gas,
+                dwellingType,  lightInstallation,  generalConditions,  neighborhoodType,  basicServicies, isModification, gas,
                 carafe,  water,  watterWell,  antiquity,  numberOfEnvironments,  rental);
     }
 
@@ -273,6 +280,7 @@ public class DwellingCategory implements Category {
                 ", generalConditions=" + generalConditions +
                 ", neighborhoodType=" + neighborhoodType +
                 ", basicServicies=" + basicServicies +
+                ", isModification=" + isModification +
                 ", gas=" + gas +
                 ", carafe=" + carafe +
                 ", water=" + water +

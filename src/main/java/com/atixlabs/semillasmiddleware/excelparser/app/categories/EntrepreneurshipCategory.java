@@ -1,6 +1,7 @@
 package com.atixlabs.semillasmiddleware.excelparser.app.categories;
 
 import com.atixlabs.semillasmiddleware.excelparser.app.constants.Categories;
+import com.atixlabs.semillasmiddleware.excelparser.app.constants.DidiSyncStatus;
 import com.atixlabs.semillasmiddleware.excelparser.app.constants.EntrepreneurshipQuestion;
 import com.atixlabs.semillasmiddleware.excelparser.app.dto.AnswerDto;
 import com.atixlabs.semillasmiddleware.excelparser.app.dto.AnswerRow;
@@ -17,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import static com.atixlabs.semillasmiddleware.excelparser.app.constants.DidiSyncStatus.IS_MODIFICATION;
 
 @Setter
 @Getter
@@ -81,6 +84,7 @@ public class EntrepreneurshipCategory implements Category {
     private AnswerDto projection;
     private AnswerDto facebook;
     private AnswerDto photo;
+    private AnswerDto isModification;
 
 
     public EntrepreneurshipCategory(String categoryUniqueName, Categories category) {
@@ -139,6 +143,7 @@ public class EntrepreneurshipCategory implements Category {
 
         this.categoryOriginalName = categoryUniqueName;
         this.categoryName = category;
+        this.isModification = new AnswerDto(EntrepreneurshipQuestion.IS_MODIFICATION);
     }
 
     public void loadData(AnswerRow answerRow, ProcessExcelFileResult processExcelFileResult){
@@ -263,6 +268,8 @@ public class EntrepreneurshipCategory implements Category {
                 return Optional.of(this.facebook);
             case PHOTO:
                 return Optional.of(this.photo);
+            case IS_MODIFICATION:
+                return Optional.of(this.isModification);
             default:
                 return Optional.empty();
         }
@@ -318,6 +325,7 @@ public class EntrepreneurshipCategory implements Category {
     public LocalDate getActivityEndingDate(){
         return (LocalDate) this.activityEndingDate.getAnswer();
     }
+    public Boolean getIsModification() { return getBooleanFromAnswer(this.isModification); }
 
     @Override
     public String toString() {
@@ -371,6 +379,7 @@ public class EntrepreneurshipCategory implements Category {
                 ", projection=" + projection +
                 ", facebook=" + facebook +
                 ", photo=" + photo +
+                ", isModification=" + isModification +
                 '}';
     }
 
@@ -406,7 +415,7 @@ public class EntrepreneurshipCategory implements Category {
                 entries, entryPerMonth,
                 exits, exitRent, exitWater, exitElectricity, exitShopping, exitPhone, exitTaxes, exitTransport, exitMaintenance, exitEmployees, exitOthers, totalExit,
                 entriesExitsRelationship, totalEntry, totalExit, entryExitRelationship, entryExitRelationshipFortnight,
-                projection, facebook, photo
+                projection, facebook, photo, isModification
         );
     }
 }

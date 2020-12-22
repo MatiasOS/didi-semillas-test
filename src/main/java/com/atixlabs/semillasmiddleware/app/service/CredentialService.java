@@ -696,7 +696,7 @@ public class CredentialService {
 
 
 
-    public void buildAllCredentialsFromForm(SurveyForm surveyForm, ProcessExcelFileResult processExcelFileResult) throws CredentialException {
+    public void buildAllCredentialsFromForm(SurveyForm surveyForm) throws CredentialException {
         log.info("buildAllCredentialsFromForm: " + this.toString());
         saveAllCredentialsFromForm(surveyForm);
     }
@@ -741,9 +741,20 @@ public class CredentialService {
                 }
             } else if (categoryName.equals(ENTREPRENEURSHIP_CATEGORY_NAME)) {
                 EntrepreneurshipCategory entrepreneurshipCategory = (EntrepreneurshipCategory) category;
-                credentialsOptional = getEntrepreneurCredentials(credentialStateActivePending, creditHolder.getDocumentNumber(), entrepreneurshipCategory.getName());
+                Boolean isModification = entrepreneurshipCategory.getIsModification();
+                if (!isModification) {
+                    continue;
+                } else {
+                    credentialsOptional = getEntrepreneurCredentials(credentialStateActivePending, creditHolder.getDocumentNumber(), entrepreneurshipCategory.getName());
+                }
             } else if (categoryName.equals(DWELLING_CATEGORY_NAME)) {
-                credentialsOptional = getDwellingCredentials(credentialStateActivePending, creditHolder.getDocumentNumber(), beneficiaryAddress);
+                DwellingCategory dwellingCategory = (DwellingCategory) category;
+                Boolean isModification = dwellingCategory.isModification();
+                if (!isModification) {
+                    continue;
+                } else {
+                    credentialsOptional = getDwellingCredentials(credentialStateActivePending, creditHolder.getDocumentNumber(), beneficiaryAddress);
+                }
             }
 
             if (!credentialsOptional.isEmpty()) {
@@ -823,12 +834,18 @@ public class CredentialService {
                 this.createCredentialIdentityKinsman(credentialIdentity);
                 break;
             case ENTREPRENEURSHIP_CATEGORY_NAME:
-                credentialEntrepreneurshipRepository.save(buildEntrepreneurshipCredential(category, creditHolder));
+                EntrepreneurshipCategory entrepreneurshipCategory = (EntrepreneurshipCategory) category;
+                if (entrepreneurshipCategory.getIsModification()) {
+                    credentialEntrepreneurshipRepository.save(buildEntrepreneurshipCredential(category, creditHolder));
+                }
                 break;
             case DWELLING_CATEGORY_NAME:
-                PersonCategory beneficiaryCategory = (PersonCategory) surveyForm.getCategoryByUniqueName(BENEFICIARY_CATEGORY_NAME.getCode(), null);
-                credentialDwellingRepository.save(buildDwellingCredential(category, creditHolder, beneficiaryCategory));
-                break;
+                DwellingCategory dwellingCategory = (DwellingCategory) category;
+                if (dwellingCategory.isModification()) {
+                    PersonCategory beneficiaryCategory = (PersonCategory) surveyForm.getCategoryByUniqueName(BENEFICIARY_CATEGORY_NAME.getCode(), null);
+                    credentialDwellingRepository.save(buildDwellingCredential(category, creditHolder, beneficiaryCategory));
+                    break;
+                }
         }
     }
 
