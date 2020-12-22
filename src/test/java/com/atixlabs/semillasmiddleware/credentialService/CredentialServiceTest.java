@@ -26,6 +26,9 @@ import com.atixlabs.semillasmiddleware.app.service.CredentialService;
 import com.atixlabs.semillasmiddleware.app.service.CredentialStateService;
 import com.atixlabs.semillasmiddleware.app.service.PersonService;
 import com.atixlabs.semillasmiddleware.excelparser.app.categories.AnswerCategoryFactory;
+import com.atixlabs.semillasmiddleware.excelparser.app.categories.Category;
+import com.atixlabs.semillasmiddleware.excelparser.app.categories.DwellingCategory;
+import com.atixlabs.semillasmiddleware.excelparser.app.categories.PersonCategory;
 import com.atixlabs.semillasmiddleware.excelparser.app.dto.AnswerRow;
 import com.atixlabs.semillasmiddleware.excelparser.app.dto.SurveyForm;
 import com.atixlabs.semillasmiddleware.excelparser.dto.ProcessExcelFileResult;
@@ -53,6 +56,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.atixlabs.semillasmiddleware.excelparser.app.constants.Categories.BENEFICIARY_CATEGORY_NAME;
+import static com.atixlabs.semillasmiddleware.excelparser.app.constants.Categories.DWELLING_CATEGORY_NAME;
 import static org.mockito.Mockito.*;
 
 
@@ -564,6 +569,37 @@ public class CredentialServiceTest {
         //Assertions.assertEquals(credentialsFilteredRevokedMock().get(0).getCreditHolder().getFirstName() ,credentials.get(0).getCreditHolder().getFirstName());
     }*/
 
+    private void dwellingCredentialWithIsModification (boolean isModification, int timesToCheck) {
+        PersonCategory personCategory = Mockito.mock(PersonCategory.class);
+        when(personCategory.getCategoryName()).thenReturn(BENEFICIARY_CATEGORY_NAME);
+        when(personCategory.getDocumentNumber()).thenReturn(22L);
+        DwellingCategory dwellingCategory = Mockito.mock(DwellingCategory.class);
+        when(dwellingCategory.getCategoryName()).thenReturn(DWELLING_CATEGORY_NAME);
+        when(dwellingCategory.isModification()).thenReturn(isModification);
+
+        SurveyForm surveyForm = Mockito.mock(SurveyForm.class);
+        ProcessExcelFileResult processExcelFileResult = Mockito.mock(ProcessExcelFileResult.class);
+        ArrayList<Category> categoryArrayList = new ArrayList<>();
+        categoryArrayList.add(personCategory);
+        categoryArrayList.add(dwellingCategory);
+        when(surveyForm.getAllCompletedCategories()).thenReturn(categoryArrayList);
+        when(surveyForm.getCategoryByUniqueName(BENEFICIARY_CATEGORY_NAME.getCode(), null)).thenReturn(personCategory);
+
+        credentialService.validateAllCredentialsFromForm(surveyForm, processExcelFileResult);
+        verify(credentialDwellingRepository, times(timesToCheck)).findByCreditHolderDniAndAddressAndCredentialStateIn
+                (22L, null, new ArrayList<>());
+    }
+
+    @Test
+    public void dwellingCredentialWithIsModificationTrue () {
+        dwellingCredentialWithIsModification(true, 1);
+    }
+
+    @Test
+    public void dwellingCredentialWithIsModificationFalse () {
+        dwellingCredentialWithIsModification(false, 0);
+    }
+
     @Test
     public void buildAllCredentialsFromFormOK() throws InvalidRowException, CredentialException {
         log.info("buildAllCredentialsFromFormOK");
@@ -574,7 +610,7 @@ public class CredentialServiceTest {
         when(personRepository.findByDocumentNumber(any(Long.class))).thenReturn(Optional.of(new Person()));
         when(personRepository.save(any(Person.class))).thenReturn(createPersonMock());
 
-        credentialService.buildAllCredentialsFromForm(surveyForm, processExcelFileResult);
+        credentialService.buildAllCredentialsFromForm(surveyForm);
 
         Assertions.assertEquals(processExcelFileResult.getErrorRows().size(), 0);
     }
