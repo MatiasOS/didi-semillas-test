@@ -458,6 +458,7 @@ public class CredentialServiceTest {
         answerRowArrayList.add(new AnswerRow(createRowMock("EMPRENDIMIENTO", "FIN DE LA ACTIVIDAD", "03/04/2020")));
         answerRowArrayList.add(new AnswerRow(createRowMock("EMPRENDIMIENTO", "NOMBRE EMPRENDIMIENTO", "Panaderia pepe")));
         answerRowArrayList.add(new AnswerRow(createRowMock("EMPRENDIMIENTO", "TIPO DE EMPRENDIMIENTO", "Producto")));
+        answerRowArrayList.add(new AnswerRow(createRowMock("EMPRENDIMIENTO", "¿ES MODIFICACION?", "Si")));
 
         answerRowArrayList.add(new AnswerRow(createRowMock("DATOS DEL BENEFICIARIO", "NOMBRE", "Pedro")));
         answerRowArrayList.add(new AnswerRow(createRowMock("DATOS DEL BENEFICIARIO", "APELLIDO", "Picapiedra")));
@@ -469,6 +470,7 @@ public class CredentialServiceTest {
         answerRowArrayList.add(new AnswerRow(createRowMock("VIVIENDA", "VIVIENDA", "Casa")));
         answerRowArrayList.add(new AnswerRow(createRowMock("VIVIENDA", "TIPO DE TENENCIA", "Picapiedra")));
         answerRowArrayList.add(new AnswerRow(createRowMock("VIVIENDA", "DISTRITO DE RESIDENCIA", "Barrio 31")));
+        answerRowArrayList.add(new AnswerRow(createRowMock("VIVIENDA", "¿ES MODIFICACION?", "Si")));
 
         return answerRowArrayList;
     }
