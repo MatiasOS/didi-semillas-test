@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.atixlabs</groupId>
 	<artifactId>semillas-middleware</artifactId>
-	<version>1.0.18-SNAPSHOT</version>
+	<version>1.0.20-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>semillas-middleware</name>
 	<description>Semillas Middleware</description>
