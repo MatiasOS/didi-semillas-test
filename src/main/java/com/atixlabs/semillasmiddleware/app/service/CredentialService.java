@@ -750,15 +750,15 @@ public class CredentialService {
                 processExcelFileResult.addRowError(
                         ExcelErrorDetail.builder()
                         .errorHeader("Advertencia CREDENCIAL DUPLICADA")
-                        .errorBody("Existe al menos una credencial de tipo " + credentialsOptional.get(0).getCredentialCategory() +
+                        .errorBody("Existe al menos una credencial de tipo " + credentialsOptional.get(0).getCredentialDescription() +
                                 " en estado " + credentialsOptional.get(0).getCredentialState().getStateName() +
                                 " para el DNI " + credentialsOptional.get(0).getBeneficiary().getDocumentNumber() + " si desea continuar debe revocarlas manualmente")
                         .errorType(ExcelErrorType.DUPLICATED_CREDENTIAL)
                         .credentialId(credentialsOptional.get(0).getId())
-                        .category(credentialsOptional.get(0).getCredentialCategory())
-                        .documentNumber(credentialsOptional.get(0).getCreditHolderDni())
-                        .name(credentialsOptional.get(0).getCreditHolderFirstName())
-                        .lastName(credentialsOptional.get(0).getCreditHolderLastName())
+                        .category(credentialsOptional.get(0).getCredentialDescription())
+                        .documentNumber(credentialsOptional.get(0).getBeneficiaryDni())
+                        .name(credentialsOptional.get(0).getBeneficiaryFirstName())
+                        .lastName(credentialsOptional.get(0).getBeneficiaryLastName())
                         .build()
                 );
                 allCredentialsNewOrInactive = false;
