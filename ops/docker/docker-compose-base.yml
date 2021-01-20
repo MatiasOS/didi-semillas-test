@@ -1,7 +1,7 @@
 version: "3"
 services:
   backend:
-    image: docker.atixlabs.com/semillas/semillas-middleware:1.0.22-SNAPSHOT-d98bcdb9
+    image: docker.atixlabs.com/semillas/semillas-middleware:1.0.22-SNAPSHOT-0fb0f663
     environment:
       - spring_profiles_active=${ENVIRONMENT}
       - SEMILLAS_DB=${SEMILLAS_DB}
