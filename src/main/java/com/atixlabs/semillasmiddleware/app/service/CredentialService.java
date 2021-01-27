@@ -682,7 +682,7 @@ public class CredentialService {
                     credentialCreditRepository.save(newCredentialCredit);
 
                 } else {
-                    String message = String.format("Current credential credit id %d is not in valid state for modifications");
+                    String message = String.format("Current credential credit id %s is not in valid state for modifications", currentCredentialCredit.getIdBondareaCredit());
                     log.error(message);
                     throw new CredentialException(message);
                 }
